@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>ダミーゲーム(テスト用)</title>
+<style>
+  html,body{height:100%;margin:0;background:#16233a;color:#fff;font-family:"Yu Gothic",sans-serif;}
+  body{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;}
+  #t{font-size:20px;} #n{font-size:64px;font-weight:900;color:#ffb37a;}
+</style>
+</head>
+<body>
+<div id="t">ダミーゲーム</div>
+<div id="n">-</div>
+<script>
+/* 「ミニ版」プロトコルを最小で実装したテスト用ページ。
+   ?mini=1&sec=N で待機→ hub の mini-go で N 秒数えて ?score=（既定50）を返す。
+   ?noready=1 で mini-ready を返さない / ?noresult=1 で結果を返さない（ハブの異常系テスト用）。 */
+(function(){
+  var q = new URLSearchParams(location.search);
+  var mini = q.get("mini") === "1", sec = parseFloat(q.get("sec")) || 3, score = q.get("score");
+  window.__dummy = { got: [], mute: q.get("mute") };
+  if(!mini){ document.getElementById("t").textContent = "ダミーゲーム（単独）"; return; }
+  window.addEventListener("message", function(e){
+    window.__dummy.got.push(e.data);
+    if(!e.data || e.data.type !== "mini-go") return;
+    var left = sec, n = document.getElementById("n");
+    document.getElementById("t").textContent = "プレイ中";
+    n.textContent = Math.ceil(left);
+    var iv = setInterval(function(){
+      left -= 0.25; n.textContent = Math.max(0, Math.ceil(left));
+      if(left > 0) return;
+      clearInterval(iv);
+      if(q.get("noresult") === "1") return;
+      parent.postMessage({ type: "mini-result", game: "dummy", score: score == null ? 50 : parseFloat(score), detail: { sec: sec } }, "*");
+    }, 250);
+  });
+  if(q.get("noready") !== "1") parent.postMessage({ type: "mini-ready", game: "dummy" }, "*");
+})();
+</script>
+</body>
+</html>

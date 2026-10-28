@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>ミニゲーム・メドレー</title>
+<meta name="description" content="手持ちのブラウザゲームを少しずつ連続で遊んで、最後に1つの総合スコアを出す。">
+<style>
+  :root{
+    --bg0:#0c0f1a; --bg1:#1a2140;
+    --accent:#ffb37a; --accent2:#ff8fb3;
+    --line:rgba(255,255,255,.14);
+    --text:#f4f1ea;
+    --good:#7ddba4; --bad:#ff9a92;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;overscroll-behavior:none;}
+  body{
+    background:radial-gradient(120% 120% at 50% 0%,var(--bg1),var(--bg0) 75%);
+    color:var(--text);
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Segoe UI",sans-serif;
+    display:flex;align-items:center;justify-content:center;overflow:hidden;
+    user-select:none;
+  }
+  /* 100vh はスマホのアドレスバー表示中に可視領域より大きくなり上端が見切れる。dvh を優先 */
+  #stage{position:relative;width:min(100vw,620px);height:min(100vh,900px);height:min(100dvh,900px);overflow:hidden;}
+  .screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;}
+  .screen.active{display:flex;}
+
+  /* ===== タイトル(ロゴ+はじめる+あそびかただけ。ルール文は置かない) ===== */
+  #title{justify-content:center;padding:24px;text-align:center;}
+  .logo{font-size:clamp(28px,8.4vw,44px);font-weight:900;letter-spacing:.05em;line-height:1.25;
+    background:linear-gradient(90deg,var(--accent2),var(--accent));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 0 18px rgba(255,179,122,.35));}
+  .sub{margin-top:8px;font-size:12px;letter-spacing:.28em;color:var(--accent);opacity:.9;}
+  .rule{max-width:320px;font-size:13px;line-height:1.9;text-align:left;}
+  .rule p{margin:0 0 10px;} .rule p:last-child{margin-bottom:0;}
+  .rule b{color:var(--accent);}
+  .btn{margin-top:22px;cursor:pointer;user-select:none;border:none;
+    padding:15px 46px;font-size:18px;font-weight:800;letter-spacing:.1em;
+    color:#2a1608;border-radius:40px;
+    background:linear-gradient(90deg,var(--accent2),var(--accent));
+    box-shadow:0 0 26px rgba(255,143,179,.4);
+    transition:transform .12s,box-shadow .2s;touch-action:manipulation;}
+  .btn:hover{transform:translateY(-2px) scale(1.03);}
+  .btn:active{transform:scale(.97);}
+  .btn.ghost{background:none;color:var(--text);border:1px solid var(--line);
+    box-shadow:none;font-size:13px;padding:10px 22px;letter-spacing:.06em;margin-top:12px;}
+  #bestLabel,#countLabel,#note{margin-top:12px;font-size:12px;opacity:.6;min-height:14px;}
+  #note{color:var(--bad);opacity:.9;}
+
+  /* ===== あそびかた(モーダル) ===== */
+  #howtoOverlay{position:absolute;inset:0;z-index:40;display:none;align-items:center;justify-content:center;
+    background:rgba(8,10,20,.72);backdrop-filter:blur(2px);padding:20px;}
+  #howtoOverlay.show{display:flex;}
+  .howtoCard{background:rgba(26,33,64,.95);border:1px solid var(--line);border-radius:16px;
+    padding:26px 30px;text-align:center;max-width:360px;}
+  .howtoCard h2{font-size:18px;margin-bottom:14px;letter-spacing:.06em;}
+
+  /* 音のON/OFF。どの画面でも右上に出す */
+  .muteBtn{position:absolute;top:10px;right:10px;z-index:50;width:38px;height:38px;border-radius:999px;
+    border:1px solid var(--line);background:rgba(11,16,32,.7);color:#fff;font-size:16px;cursor:pointer;
+    touch-action:manipulation;}
+  .muteBtn.off{opacity:.55;}
+
+  /* ===== プレイ(ハブ。ゲーム本体は iframe) ===== */
+  #play{justify-content:flex-start;}
+  #hud{width:100%;display:flex;align-items:center;gap:8px;padding:12px 56px 10px 14px;font-size:13px;letter-spacing:.04em;flex:none;}
+  #hud .chip{background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:10px;padding:6px 12px;font-variant-numeric:tabular-nums;}
+  #hud .chip b{color:var(--accent);}
+  #dots{display:flex;gap:6px;flex:1;justify-content:center;}
+  .dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.18);}
+  .dot.now{background:var(--accent);box-shadow:0 0 8px var(--accent);}
+  .dot.done{background:var(--good);}
+  #quitBtn{background:rgba(0,0,0,.35);border:1px solid var(--line);color:var(--text);
+    border-radius:10px;padding:6px 12px;font-size:12px;cursor:pointer;}
+  #frameWrap{position:relative;flex:1;min-height:0;width:100%;background:#000;}
+  #frameWrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000;}
+  #overlay{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:24px;background:radial-gradient(120% 120% at 50% 30%,rgba(26,33,64,.97),rgba(12,15,26,.98));}
+  #overlay[hidden]{display:none;}
+  #ovKicker{font-size:12px;letter-spacing:.3em;color:var(--accent);margin-bottom:10px;min-height:16px;}
+  #ovTitle{font-size:clamp(26px,8vw,40px);font-weight:900;letter-spacing:.05em;line-height:1.3;}
+  #ovSub{margin-top:12px;font-size:14px;opacity:.8;line-height:1.7;min-height:24px;}
+  #ovCount{margin-top:18px;font-size:72px;font-weight:900;color:var(--accent);min-height:84px;font-variant-numeric:tabular-nums;
+    filter:drop-shadow(0 0 16px rgba(255,179,122,.45));}
+  #ovCount.pop{animation:pop .5s ease-out;}
+  @keyframes pop{0%{transform:scale(1.6);opacity:0}100%{transform:scale(1);opacity:1}}
+  #ovBar{width:min(240px,70%);height:10px;border-radius:6px;background:rgba(255,255,255,.12);margin-top:6px;overflow:hidden;}
+  #ovBar[hidden]{display:none;}
+  #ovBar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .6s ease-out;}
+
+  /* ===== 結果 ===== */
+  #result{justify-content:center;padding:24px 20px;text-align:center;}
+  #result h2{font-size:14px;letter-spacing:.2em;color:var(--accent);margin-bottom:4px;}
+  #rank{font-size:96px;font-weight:900;line-height:1;background:linear-gradient(90deg,var(--accent2),var(--accent));
+    -webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 22px rgba(255,179,122,.4));}
+  #total{margin:6px 0 10px;font-size:15px;}
+  #total b{font-size:32px;color:var(--accent);} #total .new{color:var(--good);font-size:12px;margin-left:8px;}
+  #rows{width:min(320px,100%);display:flex;flex-direction:column;gap:6px;margin-bottom:6px;}
+  .row{display:flex;align-items:center;gap:8px;font-size:13px;text-align:left;}
+  .row .nm{flex:none;width:112px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .row .bar{flex:1;height:8px;border-radius:5px;background:rgba(255,255,255,.12);overflow:hidden;}
+  .row .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));}
+  .row .pt{flex:none;width:32px;text-align:right;font-variant-numeric:tabular-nums;}
+  .row.err .pt{color:var(--bad);}
+  #result .btn{margin-top:14px;}
+  #result .btn.ghost{margin-top:8px;}
+</style>
+</head>
+<body>
+<div id="stage">
+  <button class="muteBtn" id="muteBtn" aria-label="音を消す/出す" title="音を消す/出す">🔊</button>
+
+  <!-- ================= タイトル ================= -->
+  <section id="title" class="screen active">
+    <div class="logo">ミニゲーム<br>メドレー</div>
+    <div class="sub">MINI GAME MEDLEY</div>
+    <button class="btn" id="startBtn">はじめる</button>
+    <button class="btn ghost" id="howtoBtn">あそびかた</button>
+    <div id="note"></div>
+    <div id="bestLabel"></div>
+    <div id="countLabel"></div>
+  </section>
+
+  <div id="howtoOverlay">
+    <div class="howtoCard">
+      <h2>あそびかた</h2>
+      <div class="rule">
+        <p>いくつかのゲームを<b>十数秒ずつ</b>、つづけて遊びます。</p>
+        <p>ゲームごとに<b>0〜100点</b>。最後に合計して、ランクが出ます。</p>
+        <p>はじまる前に、<b>3・2・1</b>のカウントダウンがあります。</p>
+      </div>
+      <button class="btn ghost" id="howtoCloseBtn">とじる</button>
+    </div>
+  </div>
+
+  <!-- ================= プレイ ================= -->
+  <section id="play" class="screen">
+    <div id="hud">
+      <div class="chip">合計 <b id="hudTotal">0</b></div>
+      <div id="dots"></div>
+      <button id="quitBtn">やめる</button>
+    </div>
+    <div id="frameWrap">
+      <div id="overlay">
+        <div id="ovKicker"></div>
+        <div id="ovTitle"></div>
+        <div id="ovSub"></div>
+        <div id="ovCount"></div>
+        <div id="ovBar" hidden><i></i></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 結果 ================= -->
+  <section id="result" class="screen">
+    <h2>MEDLEY RESULT</h2>
+    <div id="rank">-</div>
+    <div id="total"></div>
+    <div id="rows"></div>
+    <button class="btn" id="retryBtn">もういちど</button>
+    <button class="btn ghost" id="shareBtn">結果を共有する</button>
+    <button class="btn ghost" id="toTitleBtn">タイトルへ</button>
+  </section>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const Q = new URLSearchParams(location.search);
+
+  /* =========================================================
+     1. GAMES — 呼び出すゲームの一覧(id → 公開URL)。
+        ready:false のゲームは通常の抽選に入らない(まだ ?mini=1 に対応していない)。
+        ローカル確認用に ?u.<id>=<url> でURLを差し替え、?ids=a,b,c で出すゲームと順番を固定できる。
+     ========================================================= */
+  const ORIGIN = "https://masa0980-sudo.github.io/";
+  const GAMES = [
+    { id:"mochi-exit",  name:"もち出口",       tip:"いつもと違えば、引き返せ！",  url:ORIGIN + "mochi-exit/",  sec:20, ready:false },
+    { id:"mochi-jump",  name:"もちジャンプ",   tip:"ときなこを集めて進め！",      url:ORIGIN + "mochi-jump/",  sec:20, ready:false },
+    { id:"tennis-game", name:"ラリーテニス",   tip:"ミスしないで打ち返せ！",      url:ORIGIN + "tennis-game/", sec:20, ready:false },
+    { id:"dummy",       name:"ダミーゲーム",   tip:"テスト用です",                url:"./test/dummy.html",     sec:3,  ready:false, test:true },
+  ];
+  GAMES.forEach(g => { const o = Q.get("u." + g.id); if(o) g.url = o; });
+  const BY_ID = {}; GAMES.forEach(g => { BY_ID[g.id] = g; });
+  const PER_MEDLEY = 3;
+
+  /* 演出の長さ(ms)。?fast=1 は自動テスト用に短縮する */
+  const FAST = Q.get("fast") === "1";
+  const T = FAST
+    ? { ready: 1500, card: 120, tick: 90, score: 160, grace: 1500 }
+    : { ready: 9000, card: 1400, tick: 800, score: 1700, grace: 8000 };
+
+  /* =========================================================
+     2. Sfx — カウントダウンの音だけ(WebAudio)。ミュートは master ゲインで一括。
+     ========================================================= */
+  const Sfx = (function(){
+    let ac = null, master = null;
+    const MUTE_KEY = "mini-medley:muted";
+    let muted = false;
+    try { muted = localStorage.getItem(MUTE_KEY) === "1"; } catch (e) {}
+    function ensure(){
+      if(!ac){ const AC = window.AudioContext || window.webkitAudioContext; if(!AC) return; ac = new AC(); master = ac.createGain(); master.gain.value = muted ? 0 : 1; master.connect(ac.destination); }
+      if(ac.state === "suspended") ac.resume();
+    }
+    function setMuted(on){ muted = !!on; try { localStorage.setItem(MUTE_KEY, muted ? "1" : "0"); } catch (e) {} if(master) master.gain.value = muted ? 0 : 1; }
+    function tone(freq, dur, type, gain, delay){
+      if(!ac) return;
+      const t0 = ac.currentTime + (delay || 0), o = ac.createOscillator(), g = ac.createGain();
+      o.type = type || "sine"; o.frequency.setValueAtTime(freq, t0);
+      g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(gain || 0.15, t0 + 0.01); g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+      o.connect(g); g.connect(master); o.start(t0); o.stop(t0 + dur + 0.02);
+    }
+    return {
+      ensure, setMuted, isMuted: () => muted,
+      tick(){ tone(660, 0.1, "sine", 0.14); },
+      go(){ tone(990, 0.28, "triangle", 0.16); tone(1320, 0.22, "sine", 0.1, 0.06); },
+      score(n){ const base = n >= 80 ? 784 : n >= 50 ? 659 : 494; tone(base, 0.2, "triangle", 0.14); tone(base * 1.5, 0.3, "sine", 0.1, 0.12); },
+      clear(){ [523,659,784,1047].forEach((f,i)=> tone(f, 0.3, "triangle", 0.14, i*0.1)); }
+    };
+  })();
+
+  /* =========================================================
+     3. PlayCounts — 累計プレイ回数(Firestore REST)。姉妹作品共通の rythm-game-mo。
+        メドレー1回につき gameId "mini-medley" を1回だけ数える(各ゲーム側は ?mini=1 では数えない約束)。
+     ========================================================= */
+  const PlayCounts = (function(){
+    const PROJECT_ID = "rythm-game-mo";
+    const API_KEY = "AIzaSyBBo4f_LqJ2lfdKu8Q11oeiiYq_O-15LSc";
+    const ROOT = "https://firestore.googleapis.com/v1/projects/" + PROJECT_ID + "/databases/(default)/documents";
+    const IS_LOCAL = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) || location.protocol === "file:";
+    function increment(gameId){
+      if(IS_LOCAL) return Promise.resolve();
+      const commitUrl = ROOT + ":commit?key=" + API_KEY;
+      const docPath = "projects/" + PROJECT_ID + "/databases/(default)/documents/playCounts/" + encodeURIComponent(gameId);
+      const incrementBody = { writes: [{ transform: { document: docPath, fieldTransforms: [{ fieldPath: "count", increment: { integerValue: "1" } }] } }] };
+      const createBody = { writes: [{ update: { name: docPath, fields: { count: { integerValue: "1" } } }, currentDocument: { exists: false } }] };
+      return fetch(commitUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(incrementBody) })
+        .then(function(res){ if(res.ok) return; return fetch(commitUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(createBody) }); })
+        .catch(function(e){ console.warn("playCount increment failed:", e); });
+    }
+    function fetchCount(gameId){
+      const url = ROOT + "/playCounts/" + encodeURIComponent(gameId) + "?key=" + API_KEY;
+      return fetch(url).then(function(res){ return res.ok ? res.json() : null; })
+        .then(function(doc){ if(!doc || !doc.fields || !doc.fields.count) return null; return parseInt(doc.fields.count.integerValue, 10); })
+        .catch(function(e){ console.warn("playCount fetch failed:", e); return null; });
+    }
+    return { increment, fetchCount };
+  })();
+
+  /* =========================================================
+     4. Best — 合計点の自己ベスト(localStorage)。
+     ========================================================= */
+  const Best = (function(){
+    const KEY = "mini-medley:best";
+    function load(){ try { const o = JSON.parse(localStorage.getItem(KEY) || "{}"); return { total: o.total || 0, max: o.max || 0 }; } catch (e) { return { total:0, max:0 }; } }
+    function record(total, max){
+      const b = load();
+      // 本数が違うメドレーどうしを比べるため、満点に対する割合で更新を判定する
+      const better = !b.max || total / max > b.total / b.max;
+      if(better) try { localStorage.setItem(KEY, JSON.stringify({ total, max })); } catch (e) {}
+      return better;
+    }
+    return { load, record };
+  })();
+
+  /* =========================================================
+     5. 進行 — 1ゲームずつ iframe を作って遊び、終わったら必ず remove() する。
+        (iframe を残すと、そのゲームの音もタイマーも鳴り続けるため。常に iframe は1つだけ)
+        プロトコル(詳細は CLAUDE.md):
+          hub → game : URL に ?mini=1&sec=N&mute=0|1
+          game → hub : {type:"mini-ready", game}                読み込み完了・待機中
+          hub → game : {type:"mini-go"}                          カウントダウン後に開始の合図
+          game → hub : {type:"mini-result", game, score:0-100, detail}  終了(時間切れでも必ず返す)
+     ========================================================= */
+  const SCREENS = ["title","play","result"];
+  function show(id){ SCREENS.forEach(s => $(s).classList.toggle("active", s === id)); }
+
+  let run = null;                       // 進行中のメドレー { abort, list, results, idx }
+  const cancels = new Set();
+  function cancelAll(){ cancels.forEach(fn => fn()); cancels.clear(); }
+  function sleep(ms){ return new Promise(res => { const t = setTimeout(res, ms); cancels.add(() => { clearTimeout(t); res(); }); }); }
+  function waitMsg(type, game, frameWin, ms){
+    return new Promise(resolve => {
+      let done = false, t = null;
+      function fin(v){ if(done) return; done = true; clearTimeout(t); window.removeEventListener("message", on); cancels.delete(cancel); resolve(v); }
+      function on(e){ const d = e.data; if(e.source !== frameWin || !d || d.type !== type || d.game !== game) return; fin(d); }
+      function cancel(){ fin(null); }
+      t = setTimeout(() => fin(null), ms);
+      cancels.add(cancel); window.addEventListener("message", on);
+    });
+  }
+
+  function gameUrl(g){
+    const muted = Sfx.isMuted() ? 1 : 0;
+    return g.url + (g.url.indexOf("?") >= 0 ? "&" : "?") + "mini=1&sec=" + g.sec + "&mute=" + muted;
+  }
+  function pickList(){
+    const forced = (Q.get("ids") || "").split(",").map(s => s.trim()).filter(id => BY_ID[id]);
+    if(forced.length) return forced.map(id => BY_ID[id]);
+    const pool = GAMES.filter(g => g.ready && !g.test);
+    for(let i = pool.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); const t = pool[i]; pool[i] = pool[j]; pool[j] = t; }
+    return pool.slice(0, PER_MEDLEY);
+  }
+
+  function setOverlay(o){
+    $("overlay").hidden = !o;
+    if(!o) return;
+    $("ovKicker").textContent = o.kicker || "";
+    $("ovTitle").textContent = o.title || "";
+    $("ovSub").textContent = o.sub || "";
+    const c = $("ovCount"); c.textContent = o.count == null ? "" : o.count; c.classList.remove("pop"); if(o.count != null){ void c.offsetWidth; c.classList.add("pop"); }
+    const bar = $("ovBar"); bar.hidden = o.bar == null; if(o.bar != null){ bar.firstElementChild.style.width = "0"; requestAnimationFrame(() => requestAnimationFrame(() => { bar.firstElementChild.style.width = o.bar + "%"; })); }
+  }
+  function paintHud(idx, n, total){
+    $("hudTotal").textContent = total;
+    const dots = $("dots"); dots.innerHTML = "";
+    for(let i = 0; i < n; i++){ const d = document.createElement("span"); d.className = "dot" + (i < idx ? " done" : i === idx ? " now" : ""); dots.appendChild(d); }
+  }
+  function sanitize(d, g){
+    const raw = Number(d && d.score);
+    const score = isFinite(raw) ? Math.max(0, Math.min(100, Math.round(raw))) : 0;
+    return { game: g.id, name: g.name, score, detail: (d && d.detail) || null, error: null };
+  }
+
+  async function playOne(g, idx, n){
+    const me = run;
+    paintHud(idx, n, me.total);
+    setOverlay({ kicker: (idx + 1) + " / " + n, title: g.name, sub: "読み込み中…" });
+    const frame = document.createElement("iframe");
+    frame.setAttribute("allow", "autoplay"); frame.title = g.name; frame.src = gameUrl(g);
+    $("frameWrap").appendChild(frame);
+    const ready = await waitMsg("mini-ready", g.id, frame.contentWindow, T.ready);
+    if(me.abort) return null;
+    let result;
+    if(!ready){
+      setOverlay({ kicker: (idx + 1) + " / " + n, title: g.name, sub: "読み込めませんでした（0点）" });
+      await sleep(T.card + 600);
+      result = { game: g.id, name: g.name, score: 0, detail: null, error: "ready-timeout" };
+    } else {
+      setOverlay({ kicker: (idx + 1) + " / " + n, title: g.name, sub: g.tip });
+      await sleep(T.card); if(me.abort) return null;
+      for(const c of [3, 2, 1]){
+        setOverlay({ kicker: (idx + 1) + " / " + n, title: g.name, sub: g.tip, count: c }); Sfx.tick();
+        await sleep(T.tick); if(me.abort) return null;
+      }
+      setOverlay(null); Sfx.go();
+      frame.contentWindow.postMessage({ type: "mini-go" }, "*");
+      const res = await waitMsg("mini-result", g.id, frame.contentWindow, g.sec * 1000 + T.grace);
+      if(me.abort) return null;
+      result = res ? sanitize(res, g) : { game: g.id, name: g.name, score: 0, detail: null, error: "result-timeout" };
+    }
+    frame.remove();
+    return result;
+  }
+
+  async function runMedley(list){
+    Sfx.ensure();
+    PlayCounts.increment("mini-medley");
+    run = { abort: false, list, results: [], total: 0, idx: 0 };
+    const me = run;
+    show("play");
+    for(let i = 0; i < list.length; i++){
+      me.idx = i;
+      const r = await playOne(list[i], i, list.length);
+      if(me.abort || run !== me || !r) return;
+      me.results.push(r); me.total += r.score;
+      paintHud(i + 1, list.length, me.total);
+      Sfx.score(r.score);
+      setOverlay({ kicker: list[i].name, title: r.score + "点", sub: r.error ? "うまく動きませんでした" : r.score >= 80 ? "すごい！" : r.score >= 50 ? "いい感じ！" : "おしい！", bar: r.score });
+      await sleep(T.score);
+      if(me.abort || run !== me) return;
+    }
+    finish(me);
+  }
+
+  const RANKS = [[85, "S"], [70, "A"], [50, "B"], [0, "C"]];
+  function rankOf(pct){ for(const r of RANKS) if(pct >= r[0]) return r[1]; return "C"; }
+  let lastShare = "";
+  function finish(me){
+    const n = me.results.length, max = n * 100, pct = Math.round(me.total / max * 100);
+    const rank = rankOf(pct);
+    const better = Best.record(me.total, max);
+    Sfx.clear();
+    $("rank").textContent = rank;
+    $("total").innerHTML = "合計 <b>" + me.total + "</b> / " + max + (better ? '<span class="new">NEW!</span>' : "");
+    const rows = $("rows"); rows.innerHTML = "";
+    me.results.forEach(r => {
+      const el = document.createElement("div"); el.className = "row" + (r.error ? " err" : "");
+      const nm = document.createElement("span"); nm.className = "nm"; nm.textContent = r.name;
+      const bar = document.createElement("span"); bar.className = "bar"; const fill = document.createElement("i"); fill.style.width = r.score + "%"; bar.appendChild(fill);
+      const pt = document.createElement("span"); pt.className = "pt"; pt.textContent = r.score;
+      el.appendChild(nm); el.appendChild(bar); el.appendChild(pt); rows.appendChild(el);
+    });
+    lastShare = [
+      "ミニゲーム・メドレー ランク" + rank,
+      "合計 " + me.total + " / " + max + "（" + me.results.map(r => r.name + " " + r.score).join(" / ") + "）",
+      "#ミニゲームメドレー",
+      "https://masa0980-sudo.github.io/mini-medley/"
+    ].join("\n");
+    paintBest(); show("result");
+  }
+  function quit(){
+    if(run) run.abort = true;
+    cancelAll();
+    const f = $("frameWrap").querySelector("iframe"); if(f) f.remove();
+    run = null; paintBest(); show("title");
+  }
+  function paintBest(){
+    const b = Best.load();
+    $("bestLabel").textContent = b.max ? ("自己ベスト " + b.total + " / " + b.max) : "";
+  }
+
+  /* =========================================================
+     6. 画面のつなぎ
+     ========================================================= */
+  function start(){
+    const list = pickList();
+    if(!list.length){ $("note").textContent = "まだ遊べるゲームがありません（準備中）"; return; }
+    $("note").textContent = "";
+    runMedley(list);
+  }
+  $("startBtn").addEventListener("click", start);
+  $("retryBtn").addEventListener("click", start);
+  $("toTitleBtn").addEventListener("click", quit);
+  $("quitBtn").addEventListener("click", quit);
+  $("howtoBtn").addEventListener("click", () => $("howtoOverlay").classList.add("show"));
+  $("howtoCloseBtn").addEventListener("click", () => $("howtoOverlay").classList.remove("show"));
+  $("shareBtn").addEventListener("click", function(){
+    const text = lastShare, btn = $("shareBtn");
+    function done(msg){ btn.textContent = msg; setTimeout(function(){ btn.textContent = "結果を共有する"; }, 1800); }
+    function copy(){
+      function fallback(){
+        const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select();
+        try { document.execCommand("copy"); done("コピーしました！"); } catch (e) { alert(text); }
+        document.body.removeChild(ta);
+      }
+      if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(function(){ done("コピーしました！"); }, fallback); }
+      else fallback();
+    }
+    if(navigator.share){ navigator.share({ text: text }).catch(function(err){ if(!err || err.name !== "AbortError") copy(); }); }
+    else copy();
+  });
+  function paintMute(){ const on = Sfx.isMuted(); $("muteBtn").textContent = on ? "🔇" : "🔊"; $("muteBtn").classList.toggle("off", on); $("muteBtn").setAttribute("aria-pressed", on ? "true" : "false"); }
+  $("muteBtn").addEventListener("click", function(e){ e.preventDefault(); Sfx.setMuted(!Sfx.isMuted()); paintMute(); });
+  paintMute(); paintBest();
+  PlayCounts.fetchCount("mini-medley").then(function(c){ if(c != null) $("countLabel").textContent = "これまでに " + c.toLocaleString() + " 回プレイされています"; });
+
+  /* テスト用フック */
+  window.__medley = {
+    games: GAMES.map(g => ({ id: g.id, ready: !!g.ready, sec: g.sec })),
+    state(){ return run ? { abort: run.abort, idx: run.idx, total: run.total, results: run.results.slice(), frames: $("frameWrap").querySelectorAll("iframe").length } : null; },
+    frames(){ return $("frameWrap").querySelectorAll("iframe").length; },
+    shareText(){ return lastShare; },
+    isMuted(){ return Sfx.isMuted(); },
+    start,
+  };
+})();
+</script>
+</body>
+</html>
