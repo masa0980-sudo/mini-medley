@@ -184,6 +184,8 @@
     { id:"tennis-game", name:"ラリーテニス",   tip:"ミスしないで打ち返せ！",      url:ORIGIN + "tennis-game/", sec:20, ready:true },
     { id:"neon-void",   name:"ネオン・ヴォイド", tip:"撃って、よけて、生き残れ！",  url:ORIGIN + "neon-void/",   sec:20, ready:true },
     { id:"rhythm-game", name:"ぴったりリング",   tip:"リングがまん中に来たらタップ！", url:ORIGIN + "Rhythm_game/", sec:20, ready:true },
+    { id:"daily-claude-quiz", name:"Claude Codeクイズ", tip:"3問、はやく正解しよう！", url:ORIGIN + "daily-claude-quiz/", sec:20, ready:true },
+    { id:"daily-genai-quiz",  name:"生成AIクイズ",      tip:"3問、はやく正解しよう！", url:ORIGIN + "daily-genai-quiz/",  sec:20, ready:true },
     { id:"dummy",       name:"ダミーゲーム",   tip:"テスト用です",                url:"./test/dummy.html",     sec:3,  ready:false, test:true },
   ];
   GAMES.forEach(g => { const o = Q.get("u." + g.id); if(o) g.url = o; });
