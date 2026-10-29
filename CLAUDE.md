@@ -70,21 +70,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 3本前後を連続で遊ぶ1モードのみ。ランキング（Firestore 書き込み）・お題の選択・難易度は対象外
 （要望が出てから）。
 
-## 現状（2026-10-28 公開）
+## 現状（2026-10-28 公開・10-30 neon-void 追加）
 
-公開URL: https://masa0980-sudo.github.io/mini-medley/ 。`ready:true` は mochi-exit / mochi-jump / tennis-game の3本
-（各ゲーム側のミニ版は先に公開済み）。公開中の本物3本で、ボットによる通しプレイ（ランダム順・iframe は常に1つ・
-各ゲーム開始時に AudioContext が `running`）を確認した。
+公開URL: https://masa0980-sudo.github.io/mini-medley/ 。`ready:true` は mochi-exit / mochi-jump / tennis-game / neon-void の4本
+（各ゲーム側のミニ版は先に公開済み）。1回のメドレーは4本からランダムに3本。公開中の本物で、ボットによる通しプレイ
+（ランダム順・iframe は常に1つ・各ゲーム開始時に AudioContext が `running`）を確認した。
 
 | ゲーム | ミニ版の内容 | 100点の目安 | 検証で測った値 |
 |---|---|---|---|
 | mochi-exit | 20秒で出口8まで（正解−ミス） | 無ミスで出口8クリア | ボットは約10秒で100 |
 | mochi-jump | ステージ1の距離75%＋きなこ25%。ゴールで100 | ゴール到達 | 何もしないと1、x=2000地点で40 |
 | tennis-game | ラリー得点 ÷ 1500 | 完璧なタイミング | 完璧ボットで20秒に9回・1620点 |
+| neon-void | ステージ1・NORMAL。スコア ÷ 2000 | 約2000点（コンボを繋いで撃破） | 撃つだけのボットは20秒で500〜850点（25〜40点） |
 
 **点数の目安は人が遊んで調整する**（上の値はボットの上限・下限で、普通の人の点は未測定）。
 実機（スマホ）での音の自動再生とタッチ操作は未確認。
 
-次の候補: neon-void（時間切れ関数が無く `blur` でポーズするため改修が大きい）・Rhythm_game・クイズを足す、
+次の候補: Rhythm_game・クイズを足す、
 お題の本数や順番の選択、ランキング。ゲームを足す手順: ①ゲーム側に `?mini=1` を実装して push →
 ②`GAMES` に1行足して `ready:true` → ③上のプロトコルの項目を1つずつ確認。
