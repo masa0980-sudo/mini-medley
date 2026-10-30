@@ -62,12 +62,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 6. 画面のつなぎ・共有（`navigator.share` → クリップボード）・テストフック `window.__medley`。
 
 ランクは合計の満点に対する割合: S ≥ 85% / A ≥ 70% / B ≥ 50% / それ以外 C。
-タイトルは**ロゴ+はじめる+あそびかた+せってい**だけ（ルール文は `#howtoOverlay`。ユーザーの固定方針）。
+タイトルは**ロゴ+回転カード+はじめる+あそびかた+せってい**だけ（ルール文は `#howtoOverlay`。ユーザーの固定方針）。
+
+**回転カード（`#carousel`・2026-10-31）**: 遊べる（`ready:true`）ゲームのタイトルがカードになって輪を描いて回り、
+「いろんなゲームが遊べる」ことがひと目で分かる。カードの絵は `LOOK`（絵文字＋グラデ2色）、コードだけで描いており画像素材は無い。
+手前ほど大きく明るく、奥ほど小さく暗い（`z=cos(th)` から拡大率・透明度・`z-index` を出す）。自動回転は 0.38rad/s
+（`prefers-reduced-motion` なら 0.05）。ドラッグで回せて、離すと勢い（±3 に制限）が自動回転へ戻る。
+`requestAnimationFrame` はタイトル画面が出ている間だけ回す（`show()` が `carouselStart/Stop`）。
+ゲームを足したら `LOOK` に1行足す（無ければ 🎮 のグレー）。
 
 ## `window.__medley` — テストフック
 
 `games`（id・ready・sec の一覧）/ `state()`（進行中の idx・total・results・iframe 数。無ければ null）/ `frames()` /
-`shareText()` / `isMuted()` / `start()` / `pool()`（いま抽選に入るゲームの id）/ `setDisabled(ids)`。`test/dummy.html` はプロトコルを最小で実装したダミー
+`shareText()` / `isMuted()` / `start()` / `pool()`（いま抽選に入るゲームの id）/ `setDisabled(ids)` / `carousel()`（回転角・動作中か・カード枚数）。`test/dummy.html` はプロトコルを最小で実装したダミー
 （`?score=` で点を指定、`?noready=1` / `?noresult=1` で異常系）。通しテストは
 `?fast=1&ids=dummy,dummy,dummy&u.dummy=./test/dummy.html%3Fscore%3D80` で開き `#startBtn` → `#result` が active になるまで待つ。
 
