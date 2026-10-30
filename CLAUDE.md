@@ -46,6 +46,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 1. **GAMES** — 呼び出すゲームの表。`ready:false` のゲームは抽選に入らない（ゲーム側が `?mini=1` に対応するまで）。
    `?ids=a,b,c` で出すゲームと順番を固定（`ready` 無視・テスト用）、`?u.<id>=<url>` で URL を差し替え
    （ローカルのゲームを呼ぶ用）。**公開は必ずゲーム側を先に push してから `ready:true` にする**。
+   **全ゲームを一覧に載せる方針**（2026-10-31）: ミニ版がまだ無いゲーム（ぷよぷよ・テトリス・名言タイピング）も `ready:false` で
+   載せてあり、設定画面に「準備中」の灰色で出る。ゲームを足すのは `GAMES` に1行＋`DESC` に説明1行だけ。
+   **せってい（`#settings`）**: タイトルの「せってい」から開き、遊べる（`ready:true`）ゲームごとのチェックで抽選に入れる／外す。
+   保存は `localStorage["mini-medley:disabled"]`（**外したゲームの id だけ**を持つので、あとで足したゲームは最初から選ばれる）。
+   `chosenPool()` が抽選の元で、選んだゲームが3本以下ならその全部を遊ぶ・0本なら「えらんだゲームがありません」と出して始めない。
+   `?ids=` で固定したときは設定を無視する（テスト用）。
 2. **Sfx** — カウントダウン・得点の音だけ。`master` ゲインを通し、ミュートは `localStorage["mini-medley:muted"]`。
 3. **PlayCounts** — Firestore REST。ローカル配信では書かない。`mochi-exit` からそのまま移した。
 4. **Best** — `localStorage["mini-medley:best"]` に `{total,max}`。本数が違うメドレーでも比べられるよう
@@ -56,19 +62,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 6. 画面のつなぎ・共有（`navigator.share` → クリップボード）・テストフック `window.__medley`。
 
 ランクは合計の満点に対する割合: S ≥ 85% / A ≥ 70% / B ≥ 50% / それ以外 C。
-タイトルは**ロゴ+はじめる+あそびかただけ**（ルール文は `#howtoOverlay`。ユーザーの固定方針）。
+タイトルは**ロゴ+はじめる+あそびかた+せってい**だけ（ルール文は `#howtoOverlay`。ユーザーの固定方針）。
 
 ## `window.__medley` — テストフック
 
 `games`（id・ready・sec の一覧）/ `state()`（進行中の idx・total・results・iframe 数。無ければ null）/ `frames()` /
-`shareText()` / `isMuted()` / `start()`。`test/dummy.html` はプロトコルを最小で実装したダミー
+`shareText()` / `isMuted()` / `start()` / `pool()`（いま抽選に入るゲームの id）/ `setDisabled(ids)`。`test/dummy.html` はプロトコルを最小で実装したダミー
 （`?score=` で点を指定、`?noready=1` / `?noresult=1` で異常系）。通しテストは
 `?fast=1&ids=dummy,dummy,dummy&u.dummy=./test/dummy.html%3Fscore%3D80` で開き `#startBtn` → `#result` が active になるまで待つ。
 
 ## Scope
 
-3本前後を連続で遊ぶ1モードのみ。ランキング（Firestore 書き込み）・お題の選択・難易度は対象外
-（要望が出てから）。
+3本前後を連続で遊ぶ1モードのみ。遊ぶゲームの取捨選択はできる（せってい）。ランキング（Firestore 書き込み）・
+1回の本数（3本固定）・難易度は対象外（要望が出てから）。
 
 ## 現状（2026-10-28 公開・10-30 neon-void・Rhythm_game・クイズ2本を追加）
 

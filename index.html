@@ -91,6 +91,20 @@
   #ovBar[hidden]{display:none;}
   #ovBar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .6s ease-out;}
 
+  /* ===== せってい(遊ぶゲームをえらぶ) ===== */
+  #settings{justify-content:flex-start;padding:22px 16px 16px;text-align:center;}
+  #settings h2{font-size:18px;letter-spacing:.08em;margin-bottom:6px;}
+  #poolInfo{font-size:12px;color:var(--accent);min-height:32px;line-height:1.6;margin-bottom:8px;}
+  #gameList{flex:1;min-height:0;width:100%;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding-right:2px;-webkit-overflow-scrolling:touch;}
+  .gRow{display:flex;align-items:center;gap:12px;flex:none;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:12px;
+    background:rgba(255,255,255,.06);text-align:left;cursor:pointer;}
+  .gRow.off{opacity:.55;cursor:default;}
+  .gRow input{width:20px;height:20px;flex:none;accent-color:var(--accent);}
+  .gTxt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
+  .gTxt b{font-size:14px;} .gTxt i{font-style:normal;font-size:11px;opacity:.7;line-height:1.5;}
+  .gTag{flex:none;font-size:10px;padding:3px 8px;border-radius:8px;border:1px solid var(--line);opacity:.8;}
+  #settings .btn.ghost{flex:none;margin-top:10px;}
+
   /* ===== 結果 ===== */
   #result{justify-content:center;padding:24px 20px;text-align:center;}
   #result h2{font-size:14px;letter-spacing:.2em;color:var(--accent);margin-bottom:4px;}
@@ -119,6 +133,7 @@
     <div class="sub">MINI GAME MEDLEY</div>
     <button class="btn" id="startBtn">はじめる</button>
     <button class="btn ghost" id="howtoBtn">あそびかた</button>
+    <button class="btn ghost" id="settingsBtn">せってい</button>
     <div id="note"></div>
     <div id="bestLabel"></div>
     <div id="countLabel"></div>
@@ -135,6 +150,15 @@
       <button class="btn ghost" id="howtoCloseBtn">とじる</button>
     </div>
   </div>
+
+  <!-- ================= せってい ================= -->
+  <section id="settings" class="screen">
+    <h2>遊ぶゲームをえらぶ</h2>
+    <div id="poolInfo"></div>
+    <div id="gameList"></div>
+    <button class="btn ghost" id="allOnBtn">ぜんぶ選ぶ</button>
+    <button class="btn ghost" id="settingsBackBtn">もどる</button>
+  </section>
 
   <!-- ================= プレイ ================= -->
   <section id="play" class="screen">
@@ -186,11 +210,33 @@
     { id:"rhythm-game", name:"ぴったりリング",   tip:"リングがまん中に来たらタップ！", url:ORIGIN + "Rhythm_game/", sec:20, ready:true },
     { id:"daily-claude-quiz", name:"Claude Codeクイズ", tip:"3問、はやく正解しよう！", url:ORIGIN + "daily-claude-quiz/", sec:30, ready:true },
     { id:"daily-genai-quiz",  name:"生成AIクイズ",      tip:"3問、はやく正解しよう！", url:ORIGIN + "daily-genai-quiz/",  sec:30, ready:true },
+    { id:"puyo-puyo-next-gen", name:"ぷよぷよ",       tip:"同じ色をそろえて消せ！",     url:ORIGIN + "puyo-puyo-next-gen/", sec:30, ready:false },
+    { id:"tetris-next-gen",    name:"テトリス",       tip:"ラインをそろえて消せ！",     url:ORIGIN + "tetris-next-gen/",    sec:30, ready:false },
+    { id:"typing_quotes",      name:"名言タイピング", tip:"名言をすばやく打ち込め！",   url:ORIGIN + "typing_quotes/",      sec:30, ready:false },
     { id:"dummy",       name:"ダミーゲーム",   tip:"テスト用です",                url:"./test/dummy.html",     sec:3,  ready:false, test:true },
   ];
   GAMES.forEach(g => { const o = Q.get("u." + g.id); if(o) g.url = o; });
   const BY_ID = {}; GAMES.forEach(g => { BY_ID[g.id] = g; });
   const PER_MEDLEY = 3;
+  const DESC = {
+    "mochi-exit": "最初の通路を覚えて、いつもと違えば引き返す。見分けやすい異変だけ。",
+    "mochi-jump": "ステージ1をどこまで進めるか。ゴールすると満点。",
+    "tennis-game": "ラリーをどれだけ続けられるか。",
+    "neon-void": "ステージ1のシューティング。どれだけ撃破できるか。",
+    "rhythm-game": "リングがまん中に来たらタップ。24拍。",
+    "daily-claude-quiz": "Claude Code の4択を3問。はやく答えるほど高得点。",
+    "daily-genai-quiz": "生成AIの4択を3問。はやく答えるほど高得点。",
+    "puyo-puyo-next-gen": "ミニ版の対応待ち。",
+    "tetris-next-gen": "ミニ版の対応待ち。",
+    "typing_quotes": "ミニ版の対応待ち。"
+  };
+  /* 外したゲームの id を保存する(外したものだけ持つので、あとで足したゲームは最初から選ばれる) */
+  const DIS_KEY = "mini-medley:disabled";
+  let disabled = new Set();
+  try { const a = JSON.parse(localStorage.getItem(DIS_KEY) || "[]"); if(Array.isArray(a)) disabled = new Set(a); } catch (e) {}
+  function saveDisabled(){ try { localStorage.setItem(DIS_KEY, JSON.stringify(Array.from(disabled))); } catch (e) {} }
+  function playable(){ return GAMES.filter(g => g.ready && !g.test); }       // ミニ版が公開済みのゲーム
+  function chosenPool(){ return playable().filter(g => !disabled.has(g.id)); }  // そのうち、えらんだもの
 
   /* 演出の長さ(ms)。?fast=1 は自動テスト用に短縮する */
   const FAST = Q.get("fast") === "1";
@@ -280,7 +326,7 @@
           hub → game : {type:"mini-go"}                          カウントダウン後に開始の合図
           game → hub : {type:"mini-result", game, score:0-100, detail}  終了(時間切れでも必ず返す)
      ========================================================= */
-  const SCREENS = ["title","play","result"];
+  const SCREENS = ["title","settings","play","result"];
   function show(id){ SCREENS.forEach(s => $(s).classList.toggle("active", s === id)); }
 
   let run = null;                       // 進行中のメドレー { abort, list, results, idx }
@@ -305,7 +351,7 @@
   function pickList(){
     const forced = (Q.get("ids") || "").split(",").map(s => s.trim()).filter(id => BY_ID[id]);
     if(forced.length) return forced.map(id => BY_ID[id]);
-    const pool = GAMES.filter(g => g.ready && !g.test);
+    const pool = chosenPool();
     for(let i = pool.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); const t = pool[i]; pool[i] = pool[j]; pool[j] = t; }
     return pool.slice(0, PER_MEDLEY);
   }
@@ -421,9 +467,38 @@
   /* =========================================================
      6. 画面のつなぎ
      ========================================================= */
+  function paintPoolInfo(){
+    const n = chosenPool().length, all = playable().length;
+    $("poolInfo").textContent = n === 0 ? "ゲームが1本もえらばれていません。1本以上えらんでください。"
+      : (n <= PER_MEDLEY ? "えらんだ " + n + " 本をすべて遊びます。" : "えらんだ " + n + " 本から、" + PER_MEDLEY + "本がランダムに出ます。")
+        + "（遊べるのは " + all + " 本）";
+  }
+  function paintSettings(){
+    const box = $("gameList"); box.innerHTML = "";
+    GAMES.filter(g => !g.test).forEach(g => {
+      const ok = !!g.ready;
+      const row = document.createElement("label"); row.className = "gRow" + (ok ? "" : " off");
+      const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = ok && !disabled.has(g.id); cb.disabled = !ok;
+      cb.addEventListener("change", function(){
+        if(cb.checked) disabled.delete(g.id); else disabled.add(g.id);
+        saveDisabled(); paintPoolInfo();
+      });
+      const txt = document.createElement("span"); txt.className = "gTxt";
+      const nm = document.createElement("b"); nm.textContent = g.name;
+      const ds = document.createElement("i"); ds.textContent = DESC[g.id] || "";
+      txt.appendChild(nm); txt.appendChild(ds);
+      row.appendChild(cb); row.appendChild(txt);
+      if(!ok){ const tag = document.createElement("span"); tag.className = "gTag"; tag.textContent = "準備中"; row.appendChild(tag); }
+      box.appendChild(row);
+    });
+    paintPoolInfo();
+  }
   function start(){
     const list = pickList();
-    if(!list.length){ $("note").textContent = "まだ遊べるゲームがありません（準備中）"; return; }
+    if(!list.length){
+      $("note").textContent = playable().length ? "えらんだゲームがありません（せっていで選んでください）" : "まだ遊べるゲームがありません（準備中）";
+      return;
+    }
     $("note").textContent = "";
     runMedley(list);
   }
@@ -432,6 +507,9 @@
   $("toTitleBtn").addEventListener("click", quit);
   $("quitBtn").addEventListener("click", quit);
   $("howtoBtn").addEventListener("click", () => $("howtoOverlay").classList.add("show"));
+  $("settingsBtn").addEventListener("click", () => { $("note").textContent = ""; paintSettings(); show("settings"); });
+  $("settingsBackBtn").addEventListener("click", () => show("title"));
+  $("allOnBtn").addEventListener("click", () => { disabled.clear(); saveDisabled(); paintSettings(); });
   $("howtoCloseBtn").addEventListener("click", () => $("howtoOverlay").classList.remove("show"));
   $("shareBtn").addEventListener("click", function(){
     const text = lastShare, btn = $("shareBtn");
@@ -460,6 +538,8 @@
     frames(){ return $("frameWrap").querySelectorAll("iframe").length; },
     shareText(){ return lastShare; },
     isMuted(){ return Sfx.isMuted(); },
+    pool(){ return chosenPool().map(g => g.id); },
+    setDisabled(ids){ disabled = new Set(ids); saveDisabled(); },
     start,
   };
 })();
