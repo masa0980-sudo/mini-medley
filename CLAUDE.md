@@ -74,6 +74,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **見た目の演出（2026-10-31）**: カードの絵は実際のゲーム画面（`img/<id>.jpg`・240×320・Playwright で撮影して3:4に切り抜き）。無ければ絵文字+グラデーションに戻る。
 お題カードは「NEXT n/N」＋絵＋**ひと言命令**（`CMD`・例「そろえろ！」）が叩きつけられ、カウントダウン→GO!。ゲーム後は点数がカウントアップし、
 結果画面は内訳が順に出てから**ランクのスタンプ**（S は金色＋紙吹雪）。`?fast=1` と「動きを減らす」設定では `body.calm` で演出を即時終了（数字も即確定）。
+タイトルのロゴは**1行の画像**（`img/logo.jpg`・Gemini で生成。黒背景のまま `mix-blend-mode:screen` で黒を透かす）、背景は文字なしのキーアート（`img/bg.jpg`）。
+どちらも Gemini Web で生成（無料枠）。ロゴは「背景を純黒で」と強く指示しないと白や市松が混ざる。カードは 174×232（低い画面では 150×200 → 120×160）。
+音は Web Audio 合成のみ（`Sfx.start`=はじまり、`Sfx.fanfare(rank)`=ランク別。音源ファイルは無い）。
 ゲームを足したら `img/<id>.jpg`・`LOOK`・`CMD`・`DESC` に1行ずつ。`test/dummy.html?id=<ゲームid>` でダミーを任意のゲーム id として呼べる。
 
 ## `window.__medley` — テストフック

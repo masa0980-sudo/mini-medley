@@ -29,6 +29,9 @@
   #play.active{animation:fadeIn .3s ease-out;}
   @keyframes screenIn{0%{opacity:0;transform:translateY(14px)}100%{opacity:1;transform:none}}
   @keyframes fadeIn{0%{opacity:0}100%{opacity:1}}
+  /* 背景のキーアート(Gemini 生成・文字なし)。暗くして文字・カードの読みやすさを保つ */
+  #bgArt{position:absolute;inset:0;pointer-events:none;background:url(img/bg.jpg) center/cover no-repeat;opacity:.42;
+    -webkit-mask-image:linear-gradient(transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(transparent,#000 14%,#000 86%,transparent);}
   /* 背景のまたたく星 */
   #stars{position:absolute;inset:0;pointer-events:none;overflow:hidden;
     background-image:radial-gradient(1.5px 1.5px at 12% 18%,#fff,transparent),radial-gradient(1px 1px at 78% 12%,#fff,transparent),
@@ -43,10 +46,9 @@
 
   /* ===== タイトル(ロゴ+はじめる+あそびかただけ。ルール文は置かない) ===== */
   #title{justify-content:center;padding:24px;text-align:center;}
-  .logo{font-size:clamp(28px,8.4vw,44px);font-weight:900;letter-spacing:.05em;line-height:1.25;
-    background:linear-gradient(90deg,var(--accent2),var(--accent));
-    -webkit-background-clip:text;background-clip:text;color:transparent;
-    filter:drop-shadow(0 0 18px rgba(255,179,122,.35));animation:logoFloat 4.2s ease-in-out infinite;}
+  /* ロゴは1行の画像(黒背景のまま screen 合成して黒を透かす)。読み込めなければ alt の文字が出る */
+  .logo{display:block;width:min(94%,470px);height:auto;margin:0 auto;mix-blend-mode:screen;
+    color:var(--accent);font-size:26px;font-weight:900;animation:logoFloat 4.2s ease-in-out infinite;}
   @keyframes logoFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
   .sub{margin-top:8px;font-size:12px;letter-spacing:.28em;color:var(--accent);opacity:.9;}
   .rule{max-width:320px;font-size:13px;line-height:1.9;text-align:left;}
@@ -64,34 +66,38 @@
   .btn:active{transform:scale(.97);}
   .btn.ghost{background:none;color:var(--text);border:1px solid var(--line);
     box-shadow:none;font-size:13px;padding:10px 22px;letter-spacing:.06em;margin-top:12px;}
-  #bestLabel,#countLabel,#note{margin-top:12px;font-size:12px;opacity:.6;min-height:14px;}
+  #bestLabel,#countLabel,#note{margin-top:12px;font-size:12px;opacity:.8;min-height:14px;text-shadow:0 1px 6px #000,0 0 10px #000;}
   #note{color:var(--bad);opacity:.9;}
 
   /* ===== タイトルの回転カード(収録ゲームのタイトルが輪になって回る) ===== */
   #title .btn{margin-top:14px;}
-  #carousel{position:relative;z-index:0;isolation:isolate;width:100%;height:215px;margin:10px 0 0;touch-action:pan-y;cursor:grab;user-select:none;}
+  #carousel{position:relative;z-index:0;isolation:isolate;width:100%;height:300px;margin:4px 0 0;touch-action:pan-y;cursor:grab;user-select:none;}
   #carousel.drag{cursor:grabbing;}
   #carouselGlow{position:absolute;left:50%;top:54%;width:78%;height:70%;transform:translate(-50%,-50%);border-radius:50%;
     background:radial-gradient(closest-side,rgba(255,143,179,.28),rgba(255,179,122,.10) 55%,transparent 75%);pointer-events:none;}
   #carouselFloor{position:absolute;left:50%;bottom:18px;width:70%;height:26px;transform:translateX(-50%);border-radius:50%;
     background:radial-gradient(closest-side,rgba(255,179,122,.28),transparent 80%);pointer-events:none;}
-  .cCard{position:absolute;left:50%;top:50%;width:112px;height:150px;margin:-82px 0 0 -56px;border-radius:18px;
+  .cCard{position:absolute;left:50%;top:50%;width:174px;height:232px;margin:-123px 0 0 -87px;border-radius:22px;
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:10px 8px;text-align:center;
     border:1px solid rgba(255,255,255,.3);box-shadow:0 10px 26px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.35);
     pointer-events:none;will-change:transform,opacity;}
-  .cCard .ic{font-size:42px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.35));}
-  .cCard .nm{font-size:13px;font-weight:800;line-height:1.35;color:#fff;text-shadow:0 1px 5px rgba(0,0,0,.5);word-break:keep-all;overflow-wrap:anywhere;}
+  .cCard .ic{font-size:54px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.35));}
+  .cCard .nm{font-size:17px;font-weight:800;line-height:1.35;color:#fff;text-shadow:0 1px 5px rgba(0,0,0,.5);word-break:keep-all;overflow-wrap:anywhere;}
   .cCard .tg{font-size:10px;padding:2px 8px;border-radius:8px;background:rgba(0,0,0,.35);color:#fff;opacity:.9;}
   .cCard.soon{filter:grayscale(.85) brightness(.8);}
   .cCard .art{position:absolute;inset:0;border-radius:inherit;background-size:cover;background-position:center;}
   .cCard .scrim{position:absolute;left:0;right:0;bottom:0;height:62%;border-radius:0 0 18px 18px;background:linear-gradient(transparent,rgba(6,8,18,.92));}
   .cCard.hasArt{justify-content:flex-end;padding:0 7px 9px;overflow:hidden;gap:0;}
   .cCard.hasArt .ic{display:none;}
-  .cCard.hasArt .nm{position:relative;font-size:12px;letter-spacing:-.02em;}
+  .cCard.hasArt .nm{position:relative;font-size:17px;letter-spacing:-.01em;}
   .row2{display:flex;gap:10px;justify-content:center;}
+  @media (max-height:780px){
+    #carousel{height:255px;}
+    .cCard{width:150px;height:200px;margin:-107px 0 0 -75px;} .cCard .nm,.cCard.hasArt .nm{font-size:15px;}
+  }
   @media (max-height:640px){
-    #carousel{height:190px;margin-top:4px;}
-    .cCard{width:96px;height:128px;margin:-70px 0 0 -48px;} .cCard .ic{font-size:34px;} .cCard .nm{font-size:12px;}
+    #carousel{height:215px;margin-top:2px;}
+    .cCard{width:120px;height:160px;margin:-87px 0 0 -60px;} .cCard .ic{font-size:38px;} .cCard .nm,.cCard.hasArt .nm{font-size:13px;}
     #title .btn{margin-top:10px;}
   }
 
@@ -203,13 +209,13 @@
 </head>
 <body>
 <div id="stage">
+  <div id="bgArt"></div>
   <div id="stars"></div>
   <button class="muteBtn" id="muteBtn" aria-label="音を消す/出す" title="音を消す/出す">🔊</button>
 
   <!-- ================= タイトル ================= -->
   <section id="title" class="screen active">
-    <div class="logo">ミニゲーム<br>メドレー</div>
-    <div class="sub">MINI GAME MEDLEY</div>
+    <img class="logo" src="img/logo.jpg" alt="ミニゲーム・メドレー" width="969" height="181">
     <div id="carousel" aria-hidden="true"><div id="carouselGlow"></div><div id="carouselFloor"></div></div>
     <button class="btn" id="startBtn">はじめる</button>
     <div class="row2">
@@ -380,7 +386,16 @@
       go(){ tone(990, 0.28, "triangle", 0.16); tone(1320, 0.22, "sine", 0.1, 0.06); },
       slam(){ tone(130, 0.22, "square", 0.12); tone(65, 0.3, "sine", 0.18); tone(520, 0.12, "triangle", 0.08, 0.04); },
       score(n){ const base = n >= 80 ? 784 : n >= 50 ? 659 : 494; tone(base, 0.2, "triangle", 0.14); tone(base * 1.5, 0.3, "sine", 0.1, 0.12); },
-      clear(){ [523,659,784,1047].forEach((f,i)=> tone(f, 0.3, "triangle", 0.14, i*0.1)); }
+      clear(){ [523,659,784,1047].forEach((f,i)=> tone(f, 0.3, "triangle", 0.14, i*0.1)); },
+      /* はじまりのジングル(「はじめる」を押した瞬間) */
+      start(){ [392,523,659,784].forEach((f,i)=> tone(f, 0.18, "square", 0.07, i*0.07)); tone(1047, 0.4, "triangle", 0.12, 0.3); },
+      /* ランク発表のファンファーレ。S は華やかに、C はやさしく */
+      fanfare(rank){
+        if(rank === "S"){ [523,659,784,1047,1319].forEach((f,i)=> tone(f, 0.28, "triangle", 0.13, i*0.09)); [1047,1319,1568].forEach(f=> tone(f, 0.9, "sine", 0.1, 0.5)); [262,330,392].forEach(f=> tone(f, 0.9, "triangle", 0.08, 0.5)); [2093,2637,3136,2637].forEach((f,i)=> tone(f, 0.12, "sine", 0.05, 0.8 + i*0.09)); }
+        else if(rank === "A"){ [523,659,784,1047].forEach((f,i)=> tone(f, 0.26, "triangle", 0.13, i*0.1)); [784,1047].forEach(f=> tone(f, 0.6, "sine", 0.1, 0.45)); }
+        else if(rank === "B"){ [523,659,784].forEach((f,i)=> tone(f, 0.24, "triangle", 0.12, i*0.11)); }
+        else { [440,523].forEach((f,i)=> tone(f, 0.3, "sine", 0.1, i*0.16)); }
+      }
     };
   })();
 
@@ -532,7 +547,7 @@
   }
 
   async function runMedley(list){
-    Sfx.ensure();
+    Sfx.ensure(); Sfx.start();
     PlayCounts.increment("mini-medley");
     run = { abort: false, list, results: [], total: 0, idx: 0 };
     const me = run;
@@ -562,7 +577,7 @@
     const n = me.results.length, max = n * 100, pct = Math.round(me.total / max * 100);
     const rank = rankOf(pct);
     const better = Best.record(me.total, max);
-    Sfx.clear();
+    if(CALM) Sfx.fanfare(rank);
     const rk = $("rank"); rk.textContent = rank; rk.className = "r" + rank;
     const rd = me.results.length * 0.16 + 0.9;             // ランクのスタンプは内訳が出そろってから
     rk.style.setProperty("--rd", rd + "s"); $("result").style.setProperty("--bd", (rd + 0.5) + "s");
@@ -584,7 +599,7 @@
       "https://masa0980-sudo.github.io/mini-medley/"
     ].join("\n");
     paintBest(); show("result");
-    if(!CALM){ retrigger(rk, "stamp"); setTimeout(() => { if(run === me || !run) { if($("result").classList.contains("active")){ Sfx.slam(); if(rank === "S") confetti(150); else if(rank === "A") confetti(60); } } }, rd * 1000 + 250); }
+    if(!CALM){ retrigger(rk, "stamp"); setTimeout(() => { if(run === me || !run) { if($("result").classList.contains("active")){ Sfx.slam(); Sfx.fanfare(rank); if(rank === "S") confetti(150); else if(rank === "A") confetti(60); } } }, rd * 1000 + 250); }
   }
 
   /* 紙吹雪(ランク S は多め・A は少なめ)。結果画面が出ている間だけ描き、約3秒で止める */
@@ -670,7 +685,7 @@
   }
   function carouselLayout(){
     const el = $("carousel"), n = cCards.length; if(!n) return;
-    const rx = Math.min(el.clientWidth * 0.37, 185), ry = el.clientHeight * 0.075;
+    const rx = Math.min(el.clientWidth * 0.40, 205), ry = el.clientHeight * 0.075;
     cCards.forEach(function(c, i){
       const th = cAng + i * Math.PI * 2 / n;
       const z = Math.cos(th), k = (z + 1) / 2;                         // 1=いちばん手前 0=いちばん奥
