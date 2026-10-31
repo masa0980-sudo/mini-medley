@@ -698,7 +698,9 @@
       const th = cAng + i * Math.PI * 2 / n;
       const z = Math.cos(th), k = (z + 1) / 2;                         // 1=いちばん手前 0=いちばん奥
       c.style.transform = "translate(" + (Math.sin(th) * rx).toFixed(1) + "px," + (-z * ry).toFixed(1) + "px) scale(" + (0.58 + 0.42 * k).toFixed(3) + ")";
-      c.style.opacity = (0.28 + 0.72 * k).toFixed(3);
+      /* 手前に来るほど徐々に濃くなる(正面から約50度で現れはじめ、正面で完全に出る)。重なりの前後が入れ替わる瞬間も目立たない */
+      const e = Math.max(0, 1 - Math.abs(Math.atan2(Math.sin(th), Math.cos(th))) / 0.9), s = e * e * (3 - 2 * e);
+      c.style.opacity = ((0.3 + 0.7 * s) * (0.7 + 0.3 * k)).toFixed(3);
       c.style.zIndex = String(Math.round(k * 100));
     });
   }
