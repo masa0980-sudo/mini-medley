@@ -25,14 +25,29 @@
   /* 100vh はスマホのアドレスバー表示中に可視領域より大きくなり上端が見切れる。dvh を優先 */
   #stage{position:relative;width:min(100vw,620px);height:min(100vh,900px);height:min(100dvh,900px);overflow:hidden;}
   .screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;}
-  .screen.active{display:flex;}
+  .screen.active{display:flex;animation:screenIn .38s ease-out;}
+  #play.active{animation:fadeIn .3s ease-out;}
+  @keyframes screenIn{0%{opacity:0;transform:translateY(14px)}100%{opacity:1;transform:none}}
+  @keyframes fadeIn{0%{opacity:0}100%{opacity:1}}
+  /* 背景のまたたく星 */
+  #stars{position:absolute;inset:0;pointer-events:none;overflow:hidden;
+    background-image:radial-gradient(1.5px 1.5px at 12% 18%,#fff,transparent),radial-gradient(1px 1px at 78% 12%,#fff,transparent),
+      radial-gradient(2px 2px at 40% 34%,#ffd9b8,transparent),radial-gradient(1px 1px at 90% 46%,#fff,transparent),
+      radial-gradient(1.5px 1.5px at 22% 62%,#ffc4da,transparent),radial-gradient(1px 1px at 64% 72%,#fff,transparent),
+      radial-gradient(2px 2px at 8% 86%,#fff,transparent),radial-gradient(1.5px 1.5px at 84% 90%,#ffd9b8,transparent),
+      radial-gradient(1px 1px at 52% 8%,#fff,transparent),radial-gradient(1px 1px at 33% 92%,#fff,transparent);
+    animation:twinkle 4.5s ease-in-out infinite alternate;opacity:.55;}
+  @keyframes twinkle{0%{opacity:.25}100%{opacity:.8}}
+  /* ?fast=1(自動テスト)と「動きを減らす」設定では演出を一瞬で終える */
+  body.calm *,body.calm *::before,body.calm *::after{animation-duration:.01s!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.01s!important;transition-delay:0s!important;}
 
   /* ===== タイトル(ロゴ+はじめる+あそびかただけ。ルール文は置かない) ===== */
   #title{justify-content:center;padding:24px;text-align:center;}
   .logo{font-size:clamp(28px,8.4vw,44px);font-weight:900;letter-spacing:.05em;line-height:1.25;
     background:linear-gradient(90deg,var(--accent2),var(--accent));
     -webkit-background-clip:text;background-clip:text;color:transparent;
-    filter:drop-shadow(0 0 18px rgba(255,179,122,.35));}
+    filter:drop-shadow(0 0 18px rgba(255,179,122,.35));animation:logoFloat 4.2s ease-in-out infinite;}
+  @keyframes logoFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
   .sub{margin-top:8px;font-size:12px;letter-spacing:.28em;color:var(--accent);opacity:.9;}
   .rule{max-width:320px;font-size:13px;line-height:1.9;text-align:left;}
   .rule p{margin:0 0 10px;} .rule p:last-child{margin-bottom:0;}
@@ -43,6 +58,8 @@
     background:linear-gradient(90deg,var(--accent2),var(--accent));
     box-shadow:0 0 26px rgba(255,143,179,.4);
     transition:transform .12s,box-shadow .2s;touch-action:manipulation;}
+  #startBtn{animation:btnPulse 2.4s ease-in-out infinite;}
+  @keyframes btnPulse{0%,100%{box-shadow:0 0 26px rgba(255,143,179,.4)}50%{box-shadow:0 0 42px rgba(255,143,179,.75),0 0 12px rgba(255,179,122,.6)}}
   .btn:hover{transform:translateY(-2px) scale(1.03);}
   .btn:active{transform:scale(.97);}
   .btn.ghost{background:none;color:var(--text);border:1px solid var(--line);
@@ -66,6 +83,11 @@
   .cCard .nm{font-size:13px;font-weight:800;line-height:1.35;color:#fff;text-shadow:0 1px 5px rgba(0,0,0,.5);word-break:keep-all;overflow-wrap:anywhere;}
   .cCard .tg{font-size:10px;padding:2px 8px;border-radius:8px;background:rgba(0,0,0,.35);color:#fff;opacity:.9;}
   .cCard.soon{filter:grayscale(.85) brightness(.8);}
+  .cCard .art{position:absolute;inset:0;border-radius:inherit;background-size:cover;background-position:center;}
+  .cCard .scrim{position:absolute;left:0;right:0;bottom:0;height:62%;border-radius:0 0 18px 18px;background:linear-gradient(transparent,rgba(6,8,18,.92));}
+  .cCard.hasArt{justify-content:flex-end;padding:0 7px 9px;overflow:hidden;gap:0;}
+  .cCard.hasArt .ic{display:none;}
+  .cCard.hasArt .nm{position:relative;font-size:12px;letter-spacing:-.02em;}
   .row2{display:flex;gap:10px;justify-content:center;}
   @media (max-height:640px){
     #carousel{height:190px;margin-top:4px;}
@@ -95,7 +117,8 @@
   #dots{display:flex;gap:6px;flex:1;justify-content:center;}
   .dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.18);}
   .dot.now{background:var(--accent);box-shadow:0 0 8px var(--accent);}
-  .dot.done{background:var(--good);}
+  .dot.done{background:var(--good);animation:dotPop .45s cubic-bezier(.2,1.8,.4,1);}
+  @keyframes dotPop{0%{transform:scale(.4)}100%{transform:scale(1)}}
   #quitBtn{background:rgba(0,0,0,.35);border:1px solid var(--line);color:var(--text);
     border-radius:10px;padding:6px 12px;font-size:12px;cursor:pointer;}
   #frameWrap{position:relative;flex:1;min-height:0;width:100%;background:#000;}
@@ -104,12 +127,30 @@
     text-align:center;padding:24px;background:radial-gradient(120% 120% at 50% 30%,rgba(26,33,64,.97),rgba(12,15,26,.98));}
   #overlay[hidden]{display:none;}
   #ovKicker{font-size:12px;letter-spacing:.3em;color:var(--accent);margin-bottom:10px;min-height:16px;}
+  #ovArt{width:clamp(76px,22vw,104px);aspect-ratio:3/4;border-radius:14px;background-size:cover;background-position:center;margin-bottom:14px;
+    border:2px solid rgba(255,255,255,.35);box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 30px rgba(255,143,179,.25);}
+  #ovArt[hidden]{display:none;}
+  #ovArt.in{animation:artIn .55s cubic-bezier(.2,1.4,.4,1);}
+  @keyframes artIn{0%{transform:translateY(26px) scale(.6) rotate(-9deg);opacity:0}100%{transform:none;opacity:1}}
+  #ovCmd{font-size:clamp(34px,11vw,56px);font-weight:900;letter-spacing:.04em;line-height:1.15;color:#fff;margin:0 0 6px;
+    text-shadow:0 0 24px rgba(255,143,179,.75),0 4px 0 rgba(120,40,90,.55);}
+  #ovCmd:empty{display:none;}
+  #ovCmd.slam{animation:slam .55s cubic-bezier(.2,1.6,.4,1);}
+  @keyframes slam{0%{transform:scale(2.6) rotate(-7deg);opacity:0}55%{transform:scale(.9) rotate(1.5deg);opacity:1}100%{transform:none}}
+  #overlay.hasCmd #ovTitle{font-size:16px;font-weight:700;opacity:.85;letter-spacing:.08em;}
+  #ovSub.bounce,#ovTitle.bounce{animation:bounceIn .5s cubic-bezier(.2,1.5,.4,1);}
+  @keyframes bounceIn{0%{transform:scale(.6);opacity:0}100%{transform:none;opacity:1}}
+  #goFlash{position:absolute;left:0;right:0;top:34%;z-index:6;text-align:center;pointer-events:none;opacity:0;
+    font-size:clamp(64px,22vw,110px);font-weight:900;letter-spacing:.06em;color:#fff;
+    text-shadow:0 0 30px rgba(255,143,179,.95),0 0 60px rgba(255,179,122,.8),0 5px 0 rgba(120,40,90,.6);}
+  #goFlash.go{animation:goFlash .7s ease-out;}
+  @keyframes goFlash{0%{transform:scale(.4);opacity:0}22%{transform:scale(1.15);opacity:1}100%{transform:scale(1.7);opacity:0}}
   #ovTitle{font-size:clamp(26px,8vw,40px);font-weight:900;letter-spacing:.05em;line-height:1.3;}
   #ovSub{margin-top:12px;font-size:14px;opacity:.8;line-height:1.7;min-height:24px;}
   #ovCount{margin-top:18px;font-size:72px;font-weight:900;color:var(--accent);min-height:84px;font-variant-numeric:tabular-nums;
     filter:drop-shadow(0 0 16px rgba(255,179,122,.45));}
   #ovCount.pop{animation:pop .5s ease-out;}
-  @keyframes pop{0%{transform:scale(1.6);opacity:0}100%{transform:scale(1);opacity:1}}
+  @keyframes pop{0%{transform:scale(2.3);opacity:0}50%{transform:scale(.88);opacity:1}100%{transform:scale(1);opacity:1}}
   #ovBar{width:min(240px,70%);height:10px;border-radius:6px;background:rgba(255,255,255,.12);margin-top:6px;overflow:hidden;}
   #ovBar[hidden]{display:none;}
   #ovBar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .6s ease-out;}
@@ -123,6 +164,7 @@
     background:rgba(255,255,255,.06);text-align:left;cursor:pointer;}
   .gRow.off{opacity:.55;cursor:default;}
   .gRow input{width:20px;height:20px;flex:none;accent-color:var(--accent);}
+  .gThumb{flex:none;width:32px;height:43px;border-radius:7px;object-fit:cover;border:1px solid var(--line);background:rgba(255,255,255,.06);}
   .gTxt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
   .gTxt b{font-size:14px;} .gTxt i{font-style:normal;font-size:11px;opacity:.7;line-height:1.5;}
   .gTag{flex:none;font-size:10px;padding:3px 8px;border-radius:8px;border:1px solid var(--line);opacity:.8;}
@@ -133,21 +175,35 @@
   #result h2{font-size:14px;letter-spacing:.2em;color:var(--accent);margin-bottom:4px;}
   #rank{font-size:96px;font-weight:900;line-height:1;background:linear-gradient(90deg,var(--accent2),var(--accent));
     -webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 22px rgba(255,179,122,.4));}
+  #rank.rS{background-image:linear-gradient(180deg,#fff6c9,#ffd34e 55%,#ff9a3d);filter:drop-shadow(0 0 26px rgba(255,211,78,.7));}
+  #rank.rB{background-image:linear-gradient(90deg,#7ddba4,#4fc3d9);filter:drop-shadow(0 0 20px rgba(79,195,217,.4));}
+  #rank.rC{background-image:linear-gradient(90deg,#9aa6c4,#6f7ba0);filter:drop-shadow(0 0 14px rgba(154,166,196,.3));}
+  #rank.stamp{animation:rankStamp .75s cubic-bezier(.2,1.2,.4,1) both;animation-delay:var(--rd,1.2s);}
+  #rank.stamp.rS{animation:rankStamp .75s cubic-bezier(.2,1.2,.4,1) both,rankGlow 2.2s ease-in-out infinite;animation-delay:var(--rd,1.2s),calc(var(--rd,1.2s) + .8s);}
+  @keyframes rankStamp{0%{transform:scale(3.4) rotate(-14deg);opacity:0}55%{transform:scale(.86) rotate(3deg);opacity:1}78%{transform:scale(1.08) rotate(-1deg)}100%{transform:none;opacity:1}}
+  @keyframes rankGlow{0%,100%{filter:drop-shadow(0 0 22px rgba(255,211,78,.55))}50%{filter:drop-shadow(0 0 40px rgba(255,211,78,.95))}}
+  #confetti{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3;}
   #total{margin:6px 0 10px;font-size:15px;}
   #total b{font-size:32px;color:var(--accent);} #total .new{color:var(--good);font-size:12px;margin-left:8px;}
   #rows{width:min(320px,100%);display:flex;flex-direction:column;gap:6px;margin-bottom:6px;}
-  .row{display:flex;align-items:center;gap:8px;font-size:13px;text-align:left;}
-  .row .nm{flex:none;width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .row{display:flex;align-items:center;gap:8px;font-size:13px;text-align:left;animation:rowIn .45s ease-out both;animation-delay:calc(var(--i,0) * .16s);}
+  @keyframes rowIn{0%{opacity:0;transform:translateX(-18px)}100%{opacity:1;transform:none}}
+  .row .th{flex:none;width:26px;height:35px;border-radius:6px;object-fit:cover;border:1px solid var(--line);background:rgba(255,255,255,.06);}
+  .row .nm{flex:none;width:116px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .row .bar{flex:1;height:8px;border-radius:5px;background:rgba(255,255,255,.12);overflow:hidden;}
-  .row .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));}
+  .row .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));transform-origin:left;
+    animation:barGrow .8s ease-out both;animation-delay:calc(var(--i,0) * .16s + .2s);}
+  @keyframes barGrow{0%{transform:scaleX(0)}100%{transform:scaleX(1)}}
   .row .pt{flex:none;width:32px;text-align:right;font-variant-numeric:tabular-nums;}
   .row.err .pt{color:var(--bad);}
   #result .btn{margin-top:14px;}
+  #result .btn,#result .btn.ghost{animation:fadeIn .5s ease-out both;animation-delay:var(--bd,1.6s);}
   #result .btn.ghost{margin-top:8px;}
 </style>
 </head>
 <body>
 <div id="stage">
+  <div id="stars"></div>
   <button class="muteBtn" id="muteBtn" aria-label="音を消す/出す" title="音を消す/出す">🔊</button>
 
   <!-- ================= タイトル ================= -->
@@ -196,11 +252,14 @@
     <div id="frameWrap">
       <div id="overlay">
         <div id="ovKicker"></div>
+        <div id="ovArt" hidden></div>
+        <div id="ovCmd"></div>
         <div id="ovTitle"></div>
         <div id="ovSub"></div>
         <div id="ovCount"></div>
         <div id="ovBar" hidden><i></i></div>
       </div>
+      <div id="goFlash">GO!</div>
     </div>
   </section>
 
@@ -213,6 +272,7 @@
     <button class="btn" id="retryBtn">もういちど</button>
     <button class="btn ghost" id="shareBtn">結果を共有する</button>
     <button class="btn ghost" id="toTitleBtn">タイトルへ</button>
+    <canvas id="confetti"></canvas>
   </section>
 </div>
 
@@ -266,6 +326,30 @@
 
   /* 演出の長さ(ms)。?fast=1 は自動テスト用に短縮する */
   const FAST = Q.get("fast") === "1";
+  const REDUCED = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  const CALM = FAST || REDUCED;                         // 動きを省く(数字は即座に確定・紙吹雪なし)
+  if(CALM) document.body.classList.add("calm");
+  /* ゲームごとの「ひと言命令」(お題カードで大きく出す) と、カード用の画像(img/<id>.jpg・実際のゲーム画面) */
+  const CMD = {
+    "mochi-exit":"おぼえろ！", "mochi-jump":"すすめ！", "tennis-game":"うちかえせ！", "neon-void":"うて！",
+    "rhythm-game":"あわせろ！", "daily-claude-quiz":"こたえろ！", "daily-genai-quiz":"こたえろ！",
+    "puyo-puyo-next-gen":"そろえろ！", "tetris-next-gen":"けせ！", "typing_quotes":"うて！"
+  };
+  function artUrl(id){ return "img/" + id + ".jpg"; }
+  function thumbImg(cls, id){ const im = document.createElement("img"); im.className = cls; im.alt = ""; im.src = artUrl(id); im.addEventListener("error", function(){ im.style.visibility = "hidden"; }); return im; }
+  /* 数字をなめらかに増やす(CALM のときは即座に確定) */
+  function tweenNum(el, from, to, ms, fmt){
+    fmt = fmt || String; el._tw = (el._tw || 0) + 1; const my = el._tw;
+    if(CALM || from === to){ el.textContent = fmt(to); return; }
+    const t0 = performance.now();
+    (function step(now){
+      if(el._tw !== my) return;
+      const k = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - k, 3);
+      el.textContent = fmt(Math.round(from + (to - from) * e));
+      if(k < 1) requestAnimationFrame(step);
+    })(t0);
+  }
+  function retrigger(el, cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
   const T = FAST
     ? { ready: 1500, card: 120, tick: 90, score: 160, grace: 1500 }
     : { ready: 9000, card: 1400, tick: 800, score: 1700, grace: 8000 };
@@ -294,6 +378,7 @@
       ensure, setMuted, isMuted: () => muted,
       tick(){ tone(660, 0.1, "sine", 0.14); },
       go(){ tone(990, 0.28, "triangle", 0.16); tone(1320, 0.22, "sine", 0.1, 0.06); },
+      slam(){ tone(130, 0.22, "square", 0.12); tone(65, 0.3, "sine", 0.18); tone(520, 0.12, "triangle", 0.08, 0.04); },
       score(n){ const base = n >= 80 ? 784 : n >= 50 ? 659 : 494; tone(base, 0.2, "triangle", 0.14); tone(base * 1.5, 0.3, "sine", 0.1, 0.12); },
       clear(){ [523,659,784,1047].forEach((f,i)=> tone(f, 0.3, "triangle", 0.14, i*0.1)); }
     };
@@ -356,6 +441,7 @@
   function show(id){
     SCREENS.forEach(s => $(s).classList.toggle("active", s === id));
     if(id === "title") carouselStart(); else carouselStop();
+    if(id !== "result" && confettiRaf) confettiStop();
   }
 
   let run = null;                       // 進行中のメドレー { abort, list, results, idx }
@@ -389,8 +475,14 @@
     $("overlay").hidden = !o;
     if(!o) return;
     $("ovKicker").textContent = o.kicker || "";
-    $("ovTitle").textContent = o.title || "";
-    $("ovSub").textContent = o.sub || "";
+    const art = $("ovArt");
+    if(o.art){ if(art.dataset.id !== o.art){ art.dataset.id = o.art; art.style.backgroundImage = "url(" + artUrl(o.art) + ")"; art.hidden = false; retrigger(art, "in"); } }
+    else { art.hidden = true; art.dataset.id = ""; }
+    const cmd = $("ovCmd");
+    if(cmd.textContent !== (o.cmd || "")){ cmd.textContent = o.cmd || ""; if(o.cmd) retrigger(cmd, "slam"); }
+    $("overlay").classList.toggle("hasCmd", !!o.cmd);
+    $("ovTitle").textContent = o.title || ""; $("ovTitle").classList.remove("bounce");
+    $("ovSub").textContent = o.sub || ""; $("ovSub").classList.remove("bounce");
     const c = $("ovCount"); c.textContent = o.count == null ? "" : o.count; c.classList.remove("pop"); if(o.count != null){ void c.offsetWidth; c.classList.add("pop"); }
     const bar = $("ovBar"); bar.hidden = o.bar == null; if(o.bar != null){ bar.firstElementChild.style.width = "0"; requestAnimationFrame(() => requestAnimationFrame(() => { bar.firstElementChild.style.width = o.bar + "%"; })); }
   }
@@ -408,7 +500,8 @@
   async function playOne(g, idx, n){
     const me = run;
     paintHud(idx, n, me.total);
-    setOverlay({ kicker: (idx + 1) + " / " + n, title: g.name, sub: "読み込み中…" });
+    const kick = "NEXT  " + (idx + 1) + " / " + n;
+    setOverlay({ kicker: kick, art: g.id, title: g.name, sub: "読み込み中…" });
     const frame = document.createElement("iframe");
     frame.setAttribute("allow", "autoplay"); frame.title = g.name; frame.src = gameUrl(g);
     $("frameWrap").appendChild(frame);
@@ -416,17 +509,18 @@
     if(me.abort) return null;
     let result;
     if(!ready){
-      setOverlay({ kicker: (idx + 1) + " / " + n, title: g.name, sub: "読み込めませんでした（0点）" });
+      setOverlay({ kicker: kick, art: g.id, title: g.name, sub: "読み込めませんでした（0点）" });
       await sleep(T.card + 600);
       result = { game: g.id, name: g.name, score: 0, detail: null, error: "ready-timeout" };
     } else {
-      setOverlay({ kicker: (idx + 1) + " / " + n, title: g.name, sub: g.tip });
+      const cmd = CMD[g.id] || "";
+      setOverlay({ kicker: kick, art: g.id, cmd, title: g.name, sub: g.tip }); if(cmd) Sfx.slam();
       await sleep(T.card); if(me.abort) return null;
       for(const c of [3, 2, 1]){
-        setOverlay({ kicker: (idx + 1) + " / " + n, title: g.name, sub: g.tip, count: c }); Sfx.tick();
+        setOverlay({ kicker: kick, art: g.id, cmd, title: g.name, sub: g.tip, count: c }); Sfx.tick();
         await sleep(T.tick); if(me.abort) return null;
       }
-      setOverlay(null); Sfx.go();
+      setOverlay(null); Sfx.go(); retrigger($("goFlash"), "go");
       try { frame.focus(); frame.contentWindow.focus(); } catch (e) {}   // キー操作のゲームにキーを届ける
       frame.contentWindow.postMessage({ type: "mini-go" }, "*");
       const res = await waitMsg("mini-result", g.id, frame.contentWindow, g.sec * 1000 + T.grace);
@@ -447,10 +541,14 @@
       me.idx = i;
       const r = await playOne(list[i], i, list.length);
       if(me.abort || run !== me || !r) return;
+      const before = me.total;
       me.results.push(r); me.total += r.score;
       paintHud(i + 1, list.length, me.total);
+      tweenNum($("hudTotal"), before, me.total, 900);
       Sfx.score(r.score);
-      setOverlay({ kicker: list[i].name, title: r.score + "点", sub: r.error ? "うまく動きませんでした" : r.score >= 80 ? "すごい！" : r.score >= 50 ? "いい感じ！" : "おしい！", bar: r.score });
+      setOverlay({ kicker: list[i].name, art: list[i].id, title: "0点", sub: r.error ? "うまく動きませんでした" : r.score >= 80 ? "すごい！" : r.score >= 50 ? "いい感じ！" : "おしい！", bar: r.score });
+      $("ovTitle").classList.add("bounce"); $("ovSub").classList.add("bounce");
+      tweenNum($("ovTitle"), 0, r.score, 800, v => v + "点");
       await sleep(T.score);
       if(me.abort || run !== me) return;
     }
@@ -465,11 +563,15 @@
     const rank = rankOf(pct);
     const better = Best.record(me.total, max);
     Sfx.clear();
-    $("rank").textContent = rank;
+    const rk = $("rank"); rk.textContent = rank; rk.className = "r" + rank;
+    const rd = me.results.length * 0.16 + 0.9;             // ランクのスタンプは内訳が出そろってから
+    rk.style.setProperty("--rd", rd + "s"); $("result").style.setProperty("--bd", (rd + 0.5) + "s");
     $("total").innerHTML = "合計 <b>" + me.total + "</b> / " + max + (better ? '<span class="new">NEW!</span>' : "");
+    tweenNum($("total").firstElementChild, 0, me.total, Math.round(rd * 800));
     const rows = $("rows"); rows.innerHTML = "";
-    me.results.forEach(r => {
-      const el = document.createElement("div"); el.className = "row" + (r.error ? " err" : "");
+    me.results.forEach((r, i) => {
+      const el = document.createElement("div"); el.className = "row" + (r.error ? " err" : ""); el.style.setProperty("--i", i);
+      el.appendChild(thumbImg("th", r.game));
       const nm = document.createElement("span"); nm.className = "nm"; nm.textContent = r.name;
       const bar = document.createElement("span"); bar.className = "bar"; const fill = document.createElement("i"); fill.style.width = r.score + "%"; bar.appendChild(fill);
       const pt = document.createElement("span"); pt.className = "pt"; pt.textContent = r.score;
@@ -482,6 +584,35 @@
       "https://masa0980-sudo.github.io/mini-medley/"
     ].join("\n");
     paintBest(); show("result");
+    if(!CALM){ retrigger(rk, "stamp"); setTimeout(() => { if(run === me || !run) { if($("result").classList.contains("active")){ Sfx.slam(); if(rank === "S") confetti(150); else if(rank === "A") confetti(60); } } }, rd * 1000 + 250); }
+  }
+
+  /* 紙吹雪(ランク S は多め・A は少なめ)。結果画面が出ている間だけ描き、約3秒で止める */
+  let confettiRaf = 0;
+  function confettiStop(){ if(confettiRaf) cancelAnimationFrame(confettiRaf); confettiRaf = 0; const c = $("confetti"); c.getContext("2d").clearRect(0, 0, c.width, c.height); }
+  function confetti(n){
+    if(CALM) return;
+    confettiStop();
+    const c = $("confetti"), box = $("result"), dpr = Math.min(2, window.devicePixelRatio || 1);
+    c.width = box.clientWidth * dpr; c.height = box.clientHeight * dpr;
+    const ctx = c.getContext("2d"), cols = ["#ff8fb3", "#ffb37a", "#ffd34e", "#7ddba4", "#6bc2ff", "#a970ff", "#fff"];
+    const ps = [];
+    for(let i = 0; i < n; i++){
+      const a = Math.random() * Math.PI * 2, sp = (3 + Math.random() * 9) * dpr;
+      ps.push({ x: c.width / 2, y: c.height * 0.22, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 5 * dpr, w: (5 + Math.random() * 6) * dpr, h: (3 + Math.random() * 5) * dpr,
+        r: Math.random() * 6, vr: (Math.random() - .5) * .5, col: cols[i % cols.length] });
+    }
+    const t0 = performance.now();
+    (function step(now){
+      const age = (now - t0) / 1000;
+      ctx.clearRect(0, 0, c.width, c.height);
+      ps.forEach(p => {
+        p.vy += 0.12 * dpr; p.vx *= 0.99; p.vy *= 0.994; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+        ctx.save(); ctx.globalAlpha = Math.max(0, Math.min(1, 3.2 - age)); ctx.translate(p.x, p.y); ctx.rotate(p.r);
+        ctx.fillStyle = p.col; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); ctx.restore();
+      });
+      if(age < 3.2) confettiRaf = requestAnimationFrame(step); else confettiStop();
+    })(t0);
   }
   function quit(){
     if(run) run.abort = true;
@@ -514,7 +645,6 @@
     "tetris-next-gen":    { ic:"🧱", a:"#4fc3d9", b:"#2f6fd1" },
     "typing_quotes":      { ic:"⌨️", a:"#9aa6c4", b:"#4a5578" }
   };
-  const REDUCED = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   const AUTO_SPEED = REDUCED ? 0.05 : 0.38;      // ラジアン/秒(1周 約16秒)
   const cCards = []; let cAng = 0, cVel = AUTO_SPEED, cRaf = 0, cLast = 0, cDrag = null;
   function buildCarousel(){
@@ -526,6 +656,14 @@
       const ic = document.createElement("div"); ic.className = "ic"; ic.textContent = lk.ic;
       const nm = document.createElement("div"); nm.className = "nm"; nm.textContent = g.name;
       c.appendChild(ic); c.appendChild(nm);
+      /* 実際のゲーム画面(img/<id>.jpg)があればカードの絵にする。読めなければ絵文字+グラデーションのまま */
+      const probe = new Image();
+      probe.onload = function(){
+        const art = document.createElement("div"); art.className = "art"; art.style.backgroundImage = "url(" + artUrl(g.id) + ")";
+        const sc = document.createElement("div"); sc.className = "scrim";
+        c.insertBefore(sc, c.firstChild); c.insertBefore(art, c.firstChild); c.classList.add("hasArt");
+      };
+      probe.src = artUrl(g.id);
       if(!g.ready){ const tg = document.createElement("div"); tg.className = "tg"; tg.textContent = "準備中"; c.appendChild(tg); }
       el.appendChild(c); cCards.push(c);
     });
@@ -582,7 +720,7 @@
       const nm = document.createElement("b"); nm.textContent = g.name;
       const ds = document.createElement("i"); ds.textContent = DESC[g.id] || "";
       txt.appendChild(nm); txt.appendChild(ds);
-      row.appendChild(cb); row.appendChild(txt);
+      row.appendChild(cb); row.appendChild(thumbImg("gThumb", g.id)); row.appendChild(txt);
       if(!ok){ const tag = document.createElement("span"); tag.className = "gTag"; tag.textContent = "準備中"; row.appendChild(tag); }
       box.appendChild(row);
     });

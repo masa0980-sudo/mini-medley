@@ -71,6 +71,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 `requestAnimationFrame` はタイトル画面が出ている間だけ回す（`show()` が `carouselStart/Stop`）。
 ゲームを足したら `LOOK` に1行足す（無ければ 🎮 のグレー）。
 
+**見た目の演出（2026-10-31）**: カードの絵は実際のゲーム画面（`img/<id>.jpg`・240×320・Playwright で撮影して3:4に切り抜き）。無ければ絵文字+グラデーションに戻る。
+お題カードは「NEXT n/N」＋絵＋**ひと言命令**（`CMD`・例「そろえろ！」）が叩きつけられ、カウントダウン→GO!。ゲーム後は点数がカウントアップし、
+結果画面は内訳が順に出てから**ランクのスタンプ**（S は金色＋紙吹雪）。`?fast=1` と「動きを減らす」設定では `body.calm` で演出を即時終了（数字も即確定）。
+ゲームを足したら `img/<id>.jpg`・`LOOK`・`CMD`・`DESC` に1行ずつ。`test/dummy.html?id=<ゲームid>` でダミーを任意のゲーム id として呼べる。
+
 ## `window.__medley` — テストフック
 
 `games`（id・ready・sec の一覧）/ `state()`（進行中の idx・total・results・iframe 数。無ければ null）/ `frames()` /

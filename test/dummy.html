@@ -33,10 +33,10 @@
       if(left > 0) return;
       clearInterval(iv);
       if(q.get("noresult") === "1") return;
-      parent.postMessage({ type: "mini-result", game: "dummy", score: score == null ? 50 : parseFloat(score), detail: { sec: sec } }, "*");
+      parent.postMessage({ type: "mini-result", game: (q.get("id") || "dummy"), score: score == null ? 50 : parseFloat(score), detail: { sec: sec } }, "*");
     }, 250);
   });
-  if(q.get("noready") !== "1") parent.postMessage({ type: "mini-ready", game: "dummy" }, "*");
+  if(q.get("noready") !== "1") parent.postMessage({ type: "mini-ready", game: (q.get("id") || "dummy") }, "*");
 })();
 </script>
 </body>
