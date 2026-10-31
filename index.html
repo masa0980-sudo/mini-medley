@@ -459,7 +459,7 @@
   const SCREENS = ["title","settings","play","result"];
   function show(id){
     SCREENS.forEach(s => $(s).classList.toggle("active", s === id));
-    if(id === "title") carouselStart(); else carouselStop();
+    if(id === "title"){ if(typeof buildCarousel === "function") buildCarousel(); carouselLayout(); carouselStart(); } else carouselStop();
     if(id !== "result" && confettiRaf) confettiStop();
   }
 
@@ -666,9 +666,13 @@
   };
   const AUTO_SPEED = REDUCED ? 0.05 : 0.38;      // ラジアン/秒(1周 約16秒)
   const cCards = []; let cAng = 0, cVel = AUTO_SPEED, cRaf = 0, cLast = 0, cDrag = null;
+  let cSig = null;
   function buildCarousel(){
     const el = $("carousel");
-    GAMES.filter(g => !g.test && g.ready).forEach(function(g){      // 遊べるものだけ(準備中は載せない。ミニ版が公開されれば自動で増える)
+    const pool = chosenPool(), sig = pool.map(g => g.id).join(",");
+    if(sig === cSig) return;                                     // 「せってい」で選んだゲームが変わったときだけ作り直す
+    cSig = sig; el.querySelectorAll(".cCard").forEach(c => c.remove()); cCards.length = 0;
+    pool.forEach(function(g){      // えらんだゲームだけ(外したものと準備中は載せない。ミニ版が公開されれば自動で増える)
       const lk = LOOK[g.id] || { ic:"🎮", a:"#9aa6c4", b:"#4a5578" };
       const c = document.createElement("div"); c.className = "cCard" + (g.ready ? "" : " soon");
       c.style.background = "linear-gradient(155deg," + lk.a + "," + lk.b + ")";
