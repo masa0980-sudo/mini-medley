@@ -50,7 +50,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
    載せてあり、設定画面に「準備中」の灰色で出る。ゲームを足すのは `GAMES` に1行＋`DESC` に説明1行だけ。
    **せってい（`#settings`）**: タイトルの「せってい」から開き、遊べる（`ready:true`）ゲームごとのチェックで抽選に入れる／外す。
    保存は `localStorage["mini-medley:disabled"]`（**外したゲームの id だけ**を持つので、あとで足したゲームは最初から選ばれる）。
-   `chosenPool()` が抽選の元で、選んだゲームが3本以下ならその全部を遊ぶ・0本なら「えらんだゲームがありません」と出して始めない。
+   **初期設定で外すゲーム（`DEFAULT_OFF`・2026-10-31）**: 落ちゲー（ぷよぷよ・テトリス）は短時間のメドレーに向かないため、最初は外してある。
+保存済みの設定がある人にも1回だけ適用し（`mini-medley:defaults-v1`）、以後の選択は尊重する。「ぜんぶ選ぶ」は落ちゲーも含めて全部選ぶ。
+`chosenPool()` が抽選の元で、選んだゲームが3本以下ならその全部を遊ぶ・0本なら「えらんだゲームがありません」と出して始めない。
    `?ids=` で固定したときは設定を無視する（テスト用）。
 2. **Sfx** — カウントダウン・得点の音だけ。`master` ゲインを通し、ミュートは `localStorage["mini-medley:muted"]`。
 3. **PlayCounts** — Firestore REST。ローカル配信では書かない。`mochi-exit` からそのまま移した。

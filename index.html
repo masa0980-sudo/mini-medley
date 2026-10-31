@@ -326,6 +326,10 @@
   const DIS_KEY = "mini-medley:disabled";
   let disabled = new Set();
   try { const a = JSON.parse(localStorage.getItem(DIS_KEY) || "[]"); if(Array.isArray(a)) disabled = new Set(a); } catch (e) {}
+  /* 落ちゲー(ぷよぷよ・テトリス)は短時間のメドレーに向かないので、最初は外しておく(せっていで選べば遊べる)。
+     保存済みの設定がある人にも1回だけ適用し、そのあとの選択は尊重する */
+  const DEFAULT_OFF = ["puyo-puyo-next-gen", "tetris-next-gen"], DEF_KEY = "mini-medley:defaults-v1";
+  try { if(!localStorage.getItem(DEF_KEY)){ DEFAULT_OFF.forEach(id => disabled.add(id)); localStorage.setItem(DIS_KEY, JSON.stringify(Array.from(disabled))); localStorage.setItem(DEF_KEY, "1"); } } catch (e) { DEFAULT_OFF.forEach(id => disabled.add(id)); }
   function saveDisabled(){ try { localStorage.setItem(DIS_KEY, JSON.stringify(Array.from(disabled))); } catch (e) {} }
   function playable(){ return GAMES.filter(g => g.ready && !g.test); }       // ミニ版が公開済みのゲーム
   function chosenPool(){ return playable().filter(g => !disabled.has(g.id)); }  // そのうち、えらんだもの
