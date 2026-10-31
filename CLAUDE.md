@@ -86,7 +86,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 現状（2026-10-28 公開・10-30 neon-void・Rhythm_game・クイズ2本を追加）
 
 公開URL: https://masa0980-sudo.github.io/mini-medley/ 。`ready:true` は mochi-exit / mochi-jump / tennis-game / neon-void /
-rhythm-game / daily-claude-quiz / daily-genai-quiz の7本（各ゲーム側のミニ版は先に公開済み）。1回のメドレーは7本からランダムに3本。
+rhythm-game / daily-claude-quiz / daily-genai-quiz / puyo-puyo-next-gen / tetris-next-gen / typing_quotes の**10本**
+（各ゲーム側のミニ版は先に公開済み。最後の3本は 2026-10-31 追加）。1回のメドレーは10本からランダムに3本。
+キー操作のゲームにキーを届けるため、ハブは `mini-go` を送る直前に iframe へ `focus()` する。
 公開中の本物で、ボットによる通しプレイ
 （ランダム順・iframe は常に1つ・各ゲーム開始時に AudioContext が `running`）を確認した。
 
@@ -98,6 +100,10 @@ rhythm-game / daily-claude-quiz / daily-genai-quiz の7本（各ゲーム側の�
 | neon-void | ステージ1・NORMAL。スコア ÷ 2000 | 約2000点（コンボを繋いで撃破） | 撃つだけのボットは20秒で500〜850点（25〜40点） |
 | rhythm-game | ぴったりリング(ノーマル)24拍。判定点 ÷ 2400（PERFECT 100・GOOD 50） | 全部PERFECT | 完璧ボット92〜100・90msずれ(全GOOD)50・無入力0。約18秒で自然に終わる |
 | daily-claude-quiz / daily-genai-quiz | **`sec=30`**。ランダムな3問。1問ごとに制限時間（約9.1秒）・正解で20〜33.3点（速いほど高い） | 3問とも即答で正解 | 2秒ずつで全問正解91・4.5秒80・7秒69・9.5秒かけると時間切れで0。`sec` ぴったりかかる |
+
+| puyo-puyo-next-gen | **30秒**。ゲームスコア ÷ 1500（Next.js・静的エクスポート。ゲームオーバーでも結果を返す） | 約1500点（連鎖を狙う） | 盤面を見て色を合わせるボットで30秒2520点（3連鎖）＝100 |
+| tetris-next-gen | **30秒**。6ライン消しで100点（ハードドロップ加点は最大14点まで） | 6ライン | 評価関数ボット20ライン＝100・ランダム置き11・無入力0 |
+| typing_quotes | **30秒**。日本語（ローマ字）・短い名言（読み22字以内）。(打てたキー − ミス×2) ÷ 120 | 4打鍵/秒でミスなし | 2.5打鍵/秒で56・5打鍵/秒で100・ミス多めで66 |
 
 **「短すぎて遊べない」と指摘されて調整した（2026-10-31）**: もち出口は覚える時間2.2秒・20秒・難度3まで出題、クイズは1問5.8秒
 （問題文と4択を読むには足りない）だった。ゲームごとの長さは `GAMES` の `sec` で変える（ゲーム側は `sec` から自分で

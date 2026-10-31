@@ -52,7 +52,7 @@
 
   /* ===== タイトルの回転カード(収録ゲームのタイトルが輪になって回る) ===== */
   #title .btn{margin-top:14px;}
-  #carousel{position:relative;width:100%;height:215px;margin:10px 0 0;touch-action:pan-y;cursor:grab;user-select:none;}
+  #carousel{position:relative;z-index:0;isolation:isolate;width:100%;height:215px;margin:10px 0 0;touch-action:pan-y;cursor:grab;user-select:none;}
   #carousel.drag{cursor:grabbing;}
   #carouselGlow{position:absolute;left:50%;top:54%;width:78%;height:70%;transform:translate(-50%,-50%);border-radius:50%;
     background:radial-gradient(closest-side,rgba(255,143,179,.28),rgba(255,179,122,.10) 55%,transparent 75%);pointer-events:none;}
@@ -236,9 +236,9 @@
     { id:"rhythm-game", name:"ぴったりリング",   tip:"リングがまん中に来たらタップ！", url:ORIGIN + "Rhythm_game/", sec:20, ready:true },
     { id:"daily-claude-quiz", name:"Claude Codeクイズ", tip:"3問、はやく正解しよう！", url:ORIGIN + "daily-claude-quiz/", sec:30, ready:true },
     { id:"daily-genai-quiz",  name:"生成AIクイズ",      tip:"3問、はやく正解しよう！", url:ORIGIN + "daily-genai-quiz/",  sec:30, ready:true },
-    { id:"puyo-puyo-next-gen", name:"ぷよぷよ",       tip:"同じ色をそろえて消せ！",     url:ORIGIN + "puyo-puyo-next-gen/", sec:30, ready:false },
-    { id:"tetris-next-gen",    name:"テトリス",       tip:"ラインをそろえて消せ！",     url:ORIGIN + "tetris-next-gen/",    sec:30, ready:false },
-    { id:"typing_quotes",      name:"名言タイピング", tip:"名言をすばやく打ち込め！",   url:ORIGIN + "typing_quotes/",      sec:30, ready:false },
+    { id:"puyo-puyo-next-gen", name:"ぷよぷよ",       tip:"同じ色をそろえて消せ！",     url:ORIGIN + "puyo-puyo-next-gen/", sec:30, ready:true },
+    { id:"tetris-next-gen",    name:"テトリス",       tip:"ラインをそろえて消せ！",     url:ORIGIN + "tetris-next-gen/",    sec:30, ready:true },
+    { id:"typing_quotes",      name:"名言タイピング", tip:"名言をすばやく打ち込め！",   url:ORIGIN + "typing_quotes/",      sec:30, ready:true },
     { id:"dummy",       name:"ダミーゲーム",   tip:"テスト用です",                url:"./test/dummy.html",     sec:3,  ready:false, test:true },
   ];
   GAMES.forEach(g => { const o = Q.get("u." + g.id); if(o) g.url = o; });
@@ -252,9 +252,9 @@
     "rhythm-game": "リングがまん中に来たらタップ。24拍。",
     "daily-claude-quiz": "Claude Code の4択を3問。はやく答えるほど高得点。",
     "daily-genai-quiz": "生成AIの4択を3問。はやく答えるほど高得点。",
-    "puyo-puyo-next-gen": "ミニ版の対応待ち。",
-    "tetris-next-gen": "ミニ版の対応待ち。",
-    "typing_quotes": "ミニ版の対応待ち。"
+    "puyo-puyo-next-gen": "30秒で、同じ色をそろえて消す。連鎖するほど高得点。",
+    "tetris-next-gen": "30秒で、ラインをそろえて消す。6ライン消せば満点。",
+    "typing_quotes": "30秒で、名言をローマ字で打つ。速く正確なほど高得点。"
   };
   /* 外したゲームの id を保存する(外したものだけ持つので、あとで足したゲームは最初から選ばれる) */
   const DIS_KEY = "mini-medley:disabled";
@@ -427,6 +427,7 @@
         await sleep(T.tick); if(me.abort) return null;
       }
       setOverlay(null); Sfx.go();
+      try { frame.focus(); frame.contentWindow.focus(); } catch (e) {}   // キー操作のゲームにキーを届ける
       frame.contentWindow.postMessage({ type: "mini-go" }, "*");
       const res = await waitMsg("mini-result", g.id, frame.contentWindow, g.sec * 1000 + T.grace);
       if(me.abort) return null;
