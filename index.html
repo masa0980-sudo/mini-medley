@@ -700,7 +700,10 @@
       c.style.transform = "translate(" + (Math.sin(th) * rx).toFixed(1) + "px," + (-z * ry).toFixed(1) + "px) scale(" + (0.58 + 0.42 * k).toFixed(3) + ")";
       /* 手前に来るほど徐々に濃くなる(正面から約50度で現れはじめ、正面で完全に出る)。重なりの前後が入れ替わる瞬間も目立たない */
       const e = Math.max(0, 1 - Math.abs(Math.atan2(Math.sin(th), Math.cos(th))) / 0.9), s = e * e * (3 - 2 * e);
-      c.style.opacity = ((0.3 + 0.7 * s) * (0.7 + 0.3 * k)).toFixed(3);
+      /* 去っていく側は、前後が入れ替わる位置(約50度)までにほぼ透明になる。入れ替わりの瞬間に何も見えないようにして、背面へ回る間に元の濃さへ戻す */
+      const dd = Math.atan2(Math.sin(th), Math.cos(th)), sm = function(t){ t = Math.max(0, Math.min(1, t)); return t * t * (3 - 2 * t); };
+      const gone = dd > 0 ? sm((dd - 0.25) / 0.6) * (1 - sm((dd - 2.0) / 1.1)) : 0;
+      c.style.opacity = ((0.3 + 0.7 * s) * (0.7 + 0.3 * k) * (1 - 0.7 * gone)).toFixed(3);
       /* 重なり順は「去っていくカード」を少し上にしておく。前後の入れ替えを、去るカードが薄くなってから起こして、パッと変わって見えないようにする */
       const d = Math.atan2(Math.sin(th), Math.cos(th)), bias = d < 0 ? Math.PI * 2.4 / n : 0;
       c.style.zIndex = String(Math.round(1000 - (Math.abs(d) + bias) * 100));
