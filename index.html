@@ -701,7 +701,9 @@
       /* 手前に来るほど徐々に濃くなる(正面から約50度で現れはじめ、正面で完全に出る)。重なりの前後が入れ替わる瞬間も目立たない */
       const e = Math.max(0, 1 - Math.abs(Math.atan2(Math.sin(th), Math.cos(th))) / 0.9), s = e * e * (3 - 2 * e);
       c.style.opacity = ((0.3 + 0.7 * s) * (0.7 + 0.3 * k)).toFixed(3);
-      c.style.zIndex = String(Math.round(k * 100));
+      /* 重なり順は「去っていくカード」を少し上にしておく。前後の入れ替えを、去るカードが薄くなってから起こして、パッと変わって見えないようにする */
+      const d = Math.atan2(Math.sin(th), Math.cos(th)), bias = d < 0 ? Math.PI * 2.4 / n : 0;
+      c.style.zIndex = String(Math.round(1000 - (Math.abs(d) + bias) * 100));
     });
   }
   function carouselTick(now){
