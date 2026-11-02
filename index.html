@@ -297,14 +297,14 @@
   const GAMES = [
     { id:"mochi-exit",  name:"もち出口",       tip:"最初の通路を覚えて、違えば引き返せ！", url:ORIGIN + "mochi-exit/", sec:30, ready:true },
     { id:"mochi-jump",  name:"もちジャンプ",   tip:"ときなこを集めて進め！",      url:ORIGIN + "mochi-jump/",  sec:20, ready:true },
-    { id:"tennis-game", name:"ラリーテニス",   tip:"ミスしないで打ち返せ！",      url:ORIGIN + "tennis-game/", sec:20, ready:true },
-    { id:"neon-void",   name:"ネオン・ヴォイド", tip:"撃って、よけて、生き残れ！",  url:ORIGIN + "neon-void/",   sec:20, ready:true },
+    { id:"tennis-game", name:"ラリーテニス",   tip:"ミスしないで打ち返せ！",      url:ORIGIN + "tennis-game/", sec:60, ready:true },
+    { id:"neon-void",   name:"ネオン・ヴォイド", tip:"撃って、よけて、生き残れ！",  url:ORIGIN + "neon-void/",   sec:60, ready:true },
     { id:"rhythm-game", name:"ぴったりリング",   tip:"リングがまん中に来たらタップ！", url:ORIGIN + "Rhythm_game/", sec:20, ready:true },
     { id:"daily-claude-quiz", name:"Claude Codeクイズ", tip:"3問、はやく正解しよう！", url:ORIGIN + "daily-claude-quiz/", sec:30, ready:true },
     { id:"daily-genai-quiz",  name:"生成AIクイズ",      tip:"3問、はやく正解しよう！", url:ORIGIN + "daily-genai-quiz/",  sec:30, ready:true },
     { id:"puyo-puyo-next-gen", name:"ぷよぷよ",       tip:"同じ色をそろえて消せ！",     url:ORIGIN + "puyo-puyo-next-gen/", sec:60, ready:true },
     { id:"tetris-next-gen",    name:"テトリス",       tip:"ラインをそろえて消せ！",     url:ORIGIN + "tetris-next-gen/",    sec:60, ready:true },
-    { id:"typing_quotes",      name:"名言タイピング", tip:"名言をすばやく打ち込め！",   url:ORIGIN + "typing_quotes/",      sec:30, ready:true },
+    { id:"typing_quotes",      name:"名言タイピング", tip:"名言をすばやく打ち込め！",   url:ORIGIN + "typing_quotes/",      sec:60, ready:true },
     { id:"dummy",       name:"ダミーゲーム",   tip:"テスト用です",                url:"./test/dummy.html",     sec:3,  ready:false, test:true },
   ];
   GAMES.forEach(g => { const o = Q.get("u." + g.id); if(o) g.url = o; });
@@ -320,7 +320,7 @@
     "daily-genai-quiz": "生成AIの4択を3問。はやく答えるほど高得点。",
     "puyo-puyo-next-gen": "60秒で、同じ色をそろえて消す。連鎖するほど高得点。",
     "tetris-next-gen": "60秒で、ラインをそろえて消す。6ライン消せば満点。",
-    "typing_quotes": "30秒で、名言をローマ字で打つ。速く正確なほど高得点。"
+    "typing_quotes": "60秒で、名言をローマ字で打つ。速く正確なほど高得点。"
   };
   /* 外したゲームの id を保存する(外したものだけ持つので、あとで足したゲームは最初から選ばれる) */
   const DIS_KEY = "mini-medley:disabled";
