@@ -231,7 +231,7 @@
     <div class="howtoCard">
       <h2>あそびかた</h2>
       <div class="rule">
-        <p>いくつかのゲームを<b>20〜30秒ほどずつ</b>、つづけて遊びます。</p>
+        <p>いくつかのゲームを<b>20〜60秒ほどずつ</b>、つづけて遊びます。</p>
         <p>ゲームごとに<b>0〜100点</b>。最後に合計して、ランクが出ます。</p>
         <p>はじまる前に、<b>3・2・1</b>のカウントダウンがあります。</p>
       </div>
@@ -302,8 +302,8 @@
     { id:"rhythm-game", name:"ぴったりリング",   tip:"リングがまん中に来たらタップ！", url:ORIGIN + "Rhythm_game/", sec:20, ready:true },
     { id:"daily-claude-quiz", name:"Claude Codeクイズ", tip:"3問、はやく正解しよう！", url:ORIGIN + "daily-claude-quiz/", sec:30, ready:true },
     { id:"daily-genai-quiz",  name:"生成AIクイズ",      tip:"3問、はやく正解しよう！", url:ORIGIN + "daily-genai-quiz/",  sec:30, ready:true },
-    { id:"puyo-puyo-next-gen", name:"ぷよぷよ",       tip:"同じ色をそろえて消せ！",     url:ORIGIN + "puyo-puyo-next-gen/", sec:30, ready:true },
-    { id:"tetris-next-gen",    name:"テトリス",       tip:"ラインをそろえて消せ！",     url:ORIGIN + "tetris-next-gen/",    sec:30, ready:true },
+    { id:"puyo-puyo-next-gen", name:"ぷよぷよ",       tip:"同じ色をそろえて消せ！",     url:ORIGIN + "puyo-puyo-next-gen/", sec:60, ready:true },
+    { id:"tetris-next-gen",    name:"テトリス",       tip:"ラインをそろえて消せ！",     url:ORIGIN + "tetris-next-gen/",    sec:60, ready:true },
     { id:"typing_quotes",      name:"名言タイピング", tip:"名言をすばやく打ち込め！",   url:ORIGIN + "typing_quotes/",      sec:30, ready:true },
     { id:"dummy",       name:"ダミーゲーム",   tip:"テスト用です",                url:"./test/dummy.html",     sec:3,  ready:false, test:true },
   ];
@@ -318,8 +318,8 @@
     "rhythm-game": "リングがまん中に来たらタップ。24拍。",
     "daily-claude-quiz": "Claude Code の4択を3問。はやく答えるほど高得点。",
     "daily-genai-quiz": "生成AIの4択を3問。はやく答えるほど高得点。",
-    "puyo-puyo-next-gen": "30秒で、同じ色をそろえて消す。連鎖するほど高得点。",
-    "tetris-next-gen": "30秒で、ラインをそろえて消す。6ライン消せば満点。",
+    "puyo-puyo-next-gen": "60秒で、同じ色をそろえて消す。連鎖するほど高得点。",
+    "tetris-next-gen": "60秒で、ラインをそろえて消す。6ライン消せば満点。",
     "typing_quotes": "30秒で、名言をローマ字で打つ。速く正確なほど高得点。"
   };
   /* 外したゲームの id を保存する(外したものだけ持つので、あとで足したゲームは最初から選ばれる) */
